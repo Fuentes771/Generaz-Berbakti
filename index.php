@@ -9,6 +9,9 @@ $db_config = [
 ];
 ?>
 
+<?php include 'includes/header.php'; ?>
+<?php include 'includes/navbar.php'; ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>

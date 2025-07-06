@@ -1,6 +1,29 @@
 <?php include 'includes/header.php'; ?>
 <?php include 'includes/navbar.php'; ?>
 
+<!-- Add this link to your monitoring page in the content -->
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <div class="card monitoring-card">
+                <div class="card-body">
+                    <h3 class="mb-4"><i class="fas fa-chart-line text-primary"></i> Monitoring Dashboard</h3>
+                    <p class="lead mb-4">Akses halaman monitoring real-time untuk melihat data seismik terkini</p>
+                    <a href="monitoring.php" class="btn btn-primary btn-lg">
+                        <i class="fas fa-arrow-right me-2"></i> Ke Halaman Monitoring
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<?php include 'includes/footer.php'; ?>
+
+
+<?php include 'includes/header.php'; ?>
+<?php include 'includes/navbar.php'; ?>
+
 <div class="container mt-4">
     <h2 class="mb-4"><i class="fas fa-chart-line me-2"></i>Real-time Monitoring</h2>
     
