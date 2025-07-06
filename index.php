@@ -205,7 +205,7 @@ $db_config = [
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-md-8">
-                    <h1><i class="fas fa-water me-2"></i> Sistem Pedeteksi Dini Tsunami</h1>
+                    <h1><i class="fas fa-water me-2"></i> Sistm Pedeteksi Dini Tsunami</h1>
                     <p class="lead mb-0">Dashboard real-time monitoring Tsunami</p>
                 </div>
                 <div class="col-md-4 text-end">
