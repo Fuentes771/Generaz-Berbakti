@@ -14,7 +14,7 @@ $db_config = [
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pendeteksi Dini Tsunami Rinova</title>
+    <title>Pendeteksi Dini Tunami Rinova</title>
     
     <link rel="stylesheet" href="style/styles.css">
 
