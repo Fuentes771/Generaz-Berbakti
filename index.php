@@ -25,6 +25,10 @@
 <!-- Font Awesome -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 
+<!-- Tambahan Font Unik -->
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Dancing+Script&display=swap" rel="stylesheet">
+
+
 <!-- Google Fonts -->
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
 
@@ -41,18 +45,21 @@
     <div class="container py-4">
         <div class="row align-items-center">
             <div class="col-md-6">
-                <h1 class="hero-title">SISTEM DETEKSI DINI TSUNAMI</h1>
+                <h1 class="hero-title">
+                    SISTEM DETEKSI DINI TSUNAMI <br>
+                    <span class="hero-subfont">Pekon Teluk Kiluan Negri</span>
+                </h1>
                 <p class="hero-subtitle">Monitoring dan deteksi real-time untuk peringatan tsunami</p>
                 <a href="monitoring.php" class="hero-button">Lihat Monitoring</a>
             </div>
             <div class="col-md-6 position-relative">
                 <img src="img/desta.png" alt="Sistem Peringatan Tsunami" class="hero-image" />
-               
             </div>
         </div>
     </div>
     <div class="wave"></div>
 </section>
+
 
 <img src="img/cindy3.png" class="coffee-cup right" alt="Deskripsi gambar">
 <img src="img/cindy2.png" class="coffee-cup left" alt="Deskripsi gambar">

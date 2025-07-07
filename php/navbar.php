@@ -1,44 +1,38 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-  <div class="container">
+<nav class="navbar-custom shadow-lg">
+  <div class="container d-flex justify-content-between align-items-center flex-wrap">
     <!-- Brand -->
-    <a class="navbar-brand" href="index.php">
-      <i class="fas fa-water me-2"></i> Tsunami Warning
+    <a class="navbar-brand-custom d-flex align-items-center gap-2" href="index.php">
+      <i class="fas fa-water fa-lg"></i>
+      <span>Tsunami Warning</span>
     </a>
 
-    <!-- Toggler for mobile -->
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-      <span class="navbar-toggler-icon"></span>
-    </button>
+    <!-- Navigation Links -->
+    <ul class="nav flex-row gap-4 align-items-center my-2 my-lg-0">
+      <li class="nav-item">
+        <a class="nav-link-custom active" href="index.php">
+          <i class="fas fa-home me-1"></i> Home
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link-custom" href="monitoring.php">
+          <i class="fas fa-chart-line me-1"></i> Monitoring
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link-custom" href="about.php">
+          <i class="fas fa-info-circle me-1"></i> About Us
+        </a>
+      </li>
+    </ul>
 
-    <!-- Navbar links -->
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav me-auto">
-        <li class="nav-item">
-          <a class="nav-link active" href="index.php">
-            <i class="fas fa-home me-1"></i> Home
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="monitoring.php">
-            <i class="fas fa-chart-line me-1"></i> Monitoring
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="about.php">
-            <i class="fas fa-info-circle me-1"></i> About Us
-          </a>
-        </li>
-      </ul>
-
-      <!-- Right side: connection status & user info -->
-      <div class="d-flex">
-        <div id="connection-status" class="badge bg-success p-2 me-3">
-          <i class="fas fa-circle"></i> Connected
-        </div>
-        <div class="navbar-text">
-          <i class="fas fa-user me-1"></i> Admin
-        </div>
-      </div>
+    <!-- Right Side -->
+    <div class="admin-status d-flex align-items-center gap-3 mt-3 mt-lg-0">
+      <span class="badge bg-success px-3 py-2">
+        <i class="fas fa-circle me-1"></i> Connected
+      </span>
+      <span class="admin-label text-white">
+        <i class="fas fa-user me-1"></i> Admin
+      </span>
     </div>
   </div>
 </nav>

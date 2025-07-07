@@ -259,3 +259,81 @@ h1, h2, h3, h4, h5, h6 {
     height: 300px;
     z-index: 10;
 }
+
+
+/* Navbar Custom */
+.navbar-custom {
+    background-color: #1e30d7;
+    padding: 3rem 2rem; /* lebih tinggi */
+    border-bottom-left-radius: 150px 80px;
+    border-bottom-right-radius: 150px 80px;
+    position: relative;
+    z-index: 1000;
+    margin-bottom: -60px; /* efek turun ke bawah */
+}
+
+/* Brand */
+.navbar-brand-custom {
+    font-family: 'Poppins', sans-serif;
+    font-size: 2rem;
+    color: white;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.navbar-brand-custom:hover {
+    color: #60efff;
+}
+
+/* Nav Links */
+.nav-link-custom {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #ccc;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.nav-link-custom:hover,
+.nav-link-custom.active {
+    color: white;
+}
+
+/* Admin Status */
+.admin-status {
+    font-family: 'Poppins', sans-serif;
+}
+
+.admin-label {
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+    .navbar-custom {
+        padding: 2rem 1rem;
+        border-radius: 0 0 50px 50px;
+    }
+
+    .navbar-brand-custom {
+        font-size: 1.5rem;
+    }
+
+    .nav-link-custom {
+        font-size: 1rem;
+    }
+}
+
+
+
+/* Font unik untuk lokasi */
+.hero-subfont {
+ font-family: 'Dancing Script', cursive;
+    font-size: 2.2rem;
+    display: block;
+    margin-top: 0.5rem;
+    color: #ffffff;
+    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.3);
+}
