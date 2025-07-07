@@ -12,17 +12,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pendeteksi Dini Tunami Rinova</title>
-    
-    <link rel="stylesheet" href="style/styles.css">
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Pendeteksi Dini Tsunami Rinova</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PENDETEKSI DINI TSUNAMI RINOVA</title>
 
 <!-- CSS External -->
 <link rel="stylesheet" href="style/styles.css" />
