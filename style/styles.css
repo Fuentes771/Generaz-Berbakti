@@ -40,15 +40,19 @@ h1, h2, h3, h4, h5, h6 {
     text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
 }
 
-/* Font khusus untuk tulisan seperti "Kupi & Kuki" */
-.brand-script {
-    font-family: 'Pacifico', cursive;
-    font-size: 2.6rem;
-    display: inline-block;
+
+/* Tambahkan di atas atau di bawah .hero-title */
+.lokasi-title {
+    font-family: 'Satisfy', cursive;
+    font-size: 2.2rem;
     color: #fff;
-    text-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
-    margin-bottom: 0.5rem;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+    display: block;
+    margin-top: 0.2rem;  /* Lebih dekat ke tulisan atas */
+    line-height: 1.1;
 }
+
+
 
 /* Font khusus untuk "Sistem Deteksi Dini Tsunami" */
 .clicker-script {
@@ -263,7 +267,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Navbar Custom */
 .navbar-custom {
-    background-color: #1e30d7;
+    background-color: #1f1f1f;
     padding: 3rem 2rem; /* lebih tinggi */
     border-bottom-left-radius: 150px 80px;
     border-bottom-right-radius: 150px 80px;
@@ -324,16 +328,4 @@ h1, h2, h3, h4, h5, h6 {
     .nav-link-custom {
         font-size: 1rem;
     }
-}
-
-
-
-/* Font unik untuk lokasi */
-.hero-subfont {
- font-family: 'Dancing Script', cursive;
-    font-size: 2.2rem;
-    display: block;
-    margin-top: 0.5rem;
-    color: #ffffff;
-    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.3);
 }
