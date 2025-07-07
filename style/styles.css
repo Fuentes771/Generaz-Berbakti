@@ -329,3 +329,15 @@ h1, h2, h3, h4, h5, h6 {
         font-size: 1rem;
     }
 }
+
+
+
+/* Font unik untuk lokasi */
+.hero-subfont {
+ font-family: 'Dancing Script', cursive;
+    font-size: 2.2rem;
+    display: block;
+    margin-top: 0.5rem;
+    color: #ffffff;
+    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.3);
+}

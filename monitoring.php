@@ -14,69 +14,73 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+  
 </head>
 <body>
 
 <?php include 'php/navbar.php'; ?>
 
-<div class="container py-4">
+<div class="container py-4" style="margin-top: 95px;">
   <h2 class="mb-4 d-flex align-items-center">
     <i class="fas fa-wave-square me-2"></i> Monitoring Tsunami
     <span id="connection-status" class="badge bg-danger ms-auto animate__animated animate__pulse">Disconnected</span>
   </h2>
 
-  <div class="row mb-4">
-    <!-- Piezo Vibration Sensor -->
-    <div class="col-md-4">
-      <div class="card status-card">
-        <div class="card-body text-center">
-          <h5 class="card-title"><i class="fas fa-wave-square sensor-icon"></i> Getaran Kasar (Piezo)</h5>
-          <div class="data-value" id="piezo-value">0</div>
-          <div class="progress mt-2" style="height: 10px;">
-            <div id="piezo-progress" class="progress-bar bg-gradient-success" role="progressbar" style="width: 0%"></div>
-          </div>
-          <small class="text-muted">Intensitas getaran</small>
+ <div class="row mb-4">
+  
+  <!-- Kartu Sensor Getaran Kasar (Piezo) -->
+  <div class="col-md-4">
+    <div class="card sensor-card shadow-sm border-0">
+      <div class="card-body">
+        <h5 class="card-title text-primary mb-3">
+          <i class="fas fa-wave-square me-2"></i> Getaran Kasar (Piezo)
+        </h5>
+        <h2 class="fw-bold text-dark"><span id="piezo-value">0</span></h2>
+        <div class="progress mb-2" style="height: 8px;">
+          <div id="piezo-progress" class="progress-bar bg-info" style="width: 0%"></div>
         </div>
-      </div>
-    </div>
-
-    <!-- MPU6050 Sensor -->
-    <div class="col-md-4">
-      <div class="card status-card">
-        <div class="card-body text-center">
-          <h5 class="card-title"><i class="fas fa-arrows-alt sensor-icon"></i> Getaran Halus (MPU6050)</h5>
-          <div class="data-value" id="mpu-value">0</div>
-          <div class="progress mt-2" style="height: 10px;">
-            <div id="mpu-progress" class="progress-bar bg-gradient-warning" role="progressbar" style="width: 0%"></div>
-          </div>
-          <small class="text-muted">Akurasi tinggi</small>
-        </div>
-      </div>
-    </div>
-
-    <!-- Pressure, Temp, Humidity -->
-    <div class="col-md-4">
-      <div class="card status-card">
-        <div class="card-body text-center">
-          <h5 class="card-title"><i class="fas fa-thermometer-half sensor-icon"></i> Tekanan, Suhu & Kelembaban</h5>
-          <div class="data-value small">
-            <div class="d-flex justify-content-between mb-1">
-              <span>Tekanan:</span>
-              <span id="pressure-value" class="fw-bold">0</span> kPa
-            </div>
-            <div class="d-flex justify-content-between mb-1">
-              <span>Suhu:</span>
-              <span id="temperature-value" class="fw-bold">0</span> °C
-            </div>
-            <div class="d-flex justify-content-between">
-              <span>Kelembaban:</span>
-              <span id="humidity-value" class="fw-bold">0</span> %
-            </div>
-          </div>
-        </div>
+        <p class="mb-0 text-muted small">Intensitas getaran saat ini berdasarkan sensor Piezo.</p>
+        <p class="mb-0 small text-end"><i class="fas fa-clock"></i> <span id="piezo-timestamp">-</span></p>
       </div>
     </div>
   </div>
+
+  <!-- Kartu Sensor Getaran Halus (MPU6050) -->
+  <div class="col-md-4">
+    <div class="card sensor-card shadow-sm border-0">
+      <div class="card-body">
+        <h5 class="card-title text-primary mb-3">
+          <i class="fas fa-arrows-alt me-2"></i> Getaran Halus (MPU6050)
+        </h5>
+        <h2 class="fw-bold text-dark"><span id="mpu-value">0</span></h2>
+        <div class="progress mb-2" style="height: 8px;">
+          <div id="mpu-progress" class="progress-bar bg-warning" style="width: 0%"></div>
+        </div>
+        <p class="mb-0 text-muted small">Akurasi tinggi, mendeteksi gerakan ringan dan arah.</p>
+        <p class="mb-0 small text-end"><i class="fas fa-clock"></i> <span id="mpu-timestamp">-</span></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Kartu Sensor Suhu, Tekanan, Kelembaban -->
+  <div class="col-md-4">
+    <div class="card sensor-card shadow-sm border-0">
+      <div class="card-body">
+        <h5 class="card-title text-primary mb-3">
+          <i class="fas fa-thermometer-half me-2"></i> Tekanan, Suhu & Kelembaban
+        </h5>
+        <ul class="list-unstyled mb-1 text-dark fw-bold">
+          <li>Tekanan: <span id="pressure-value">0</span> kPa</li>
+          <li>Suhu: <span id="temperature-value">0</span> °C</li>
+          <li>Kelembaban: <span id="humidity-value">0</span> %</li>
+        </ul>
+        <p class="mb-0 small text-muted">Data atmosfer saat ini dari lokasi sensor.</p>
+        <p class="mb-0 small text-end"><i class="fas fa-clock"></i> <span id="env-timestamp">-</span></p>
+      </div>
+    </div>
+  </div>
+
+</div>
 
   <!-- Grafik dan Peta -->
   <div class="row mb-4">
