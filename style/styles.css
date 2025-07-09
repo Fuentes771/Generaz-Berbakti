@@ -11,6 +11,8 @@
     --font-body: 'Open Sans', sans-serif;
 }
 
+
+
 /* ========== Global Styles ========== */
 body {
     font-family: var(--font-body);
@@ -40,28 +42,23 @@ h1, h2, h3, h4, h5, h6 {
     text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
 }
 
-
-/* Tambahkan di atas atau di bawah .hero-title */
 .lokasi-title {
-    font-family: 'Satisfy', cursive;
+     font-family: 'Dancing Script', cursive;
     font-size: 2.2rem;
     color: #fff;
     text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
     display: block;
-    margin-top: 0.2rem;  /* Lebih dekat ke tulisan atas */
+    margin-top: 0.2rem;
     line-height: 1.1;
 }
 
-
-
-/* Font khusus untuk "Sistem Deteksi Dini Tsunami" */
-.clicker-script {
-    font-family: 'Clicker Script', cursive;
-    font-size: 3.4rem;
-    display: inline-block;
-    color: #fff;
-    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
-    line-height: 1.2;
+.hero-subfont {
+    font-family: 'Dancing Script', cursive;
+    font-size: 2.2rem;
+    display: block;
+    margin-top: 0.5rem;
+    color: #ffffff;
+    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.3);
 }
 
 .hero-subtitle {
@@ -122,15 +119,6 @@ h1, h2, h3, h4, h5, h6 {
     0%   { transform: translateY(0); }
     50%  { transform: translateY(-6px); }
     100% { transform: translateY(0); }
-}
-
-/* Responsif untuk HP */
-@media (max-width: 768px) {
-    .lumba-dolphin-floating {
-        width: 50px;
-        right: 5px;
-        bottom: 0;
-    }
 }
 
 /* ========== Ombak ========== */
@@ -227,117 +215,242 @@ h1, h2, h3, h4, h5, h6 {
     font-size: 0.95rem;
 }
 
-/* ========== Responsif Tambahan ========== */
-@media (max-width: 768px) {
-    .hero-title {
-        font-size: 2.2rem;
-    }
-
-    .hero-subtitle {
-        font-size: 1rem;
-    }
-
-    .hero-image {
-        margin-top: 2rem;
-    }
-
-    .feature-card {
-        margin-bottom: 1.5rem;
-    }
-}
-
-.coffee-cup.right {
-    right: 0;
-    top: 850px;
-    margin-top: 100px;
-}
-
-.coffee-cup.left {
-    left: 0;
-    top: 850px;
-    margin-top: 100px;
-}
-
+/* ========== Coffee Cup Decorations ========== */
 .coffee-cup {
     position: absolute;
     height: 300px;
     z-index: 10;
 }
 
+.coffee-cup.right {
+    right: 0;
+    top: 700px;
+    margin-top: 100px;
+}
 
-/* Navbar Custom */
+.coffee-cup.left {
+    left: 0;
+    top: 700px;
+    margin-top: 100px;
+}
+
+/* ========== Navbar Custom ========== */
 .navbar-custom {
-    background-color: #1f1f1f;
-    padding: 3rem 2rem; /* lebih tinggi */
+    background-color: #fdf8f8;
+    padding: 3rem 2rem;
     border-bottom-left-radius: 150px 80px;
     border-bottom-right-radius: 150px 80px;
     position: relative;
     z-index: 1000;
-    margin-bottom: -60px; /* efek turun ke bawah */
+    margin-bottom: -100px;
 }
 
-/* Brand */
 .navbar-brand-custom {
     font-family: 'Poppins', sans-serif;
     font-size: 2rem;
-    color: white;
+    color: var(--color-primary); /* biru */
     font-weight: 600;
     text-decoration: none;
 }
 
 .navbar-brand-custom:hover {
-    color: #60efff;
+     color: var(--color-primary); /* biru */
 }
 
-/* Nav Links */
 .nav-link-custom {
     font-family: 'Poppins', sans-serif;
     font-size: 1.1rem;
     font-weight: 500;
-    color: #ccc;
+    color: var(--color-primary); /* biru */
     text-decoration: none;
     transition: color 0.3s ease;
 }
 
 .nav-link-custom:hover,
 .nav-link-custom.active {
+     color: var(--color-primary); /* biru */
+}
+
+/* ========== Foto Alat Kami Section ========== */
+.gallery-section {
+    padding: 5rem 0;
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
     color: white;
 }
 
-/* Admin Status */
-.admin-status {
-    font-family: 'Poppins', sans-serif;
+.gallery-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 5px 20px rgba(244, 242, 242, 0.15);
+    transition: all 0.3s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
-.admin-label {
-    font-size: 1rem;
-    font-weight: 500;
+.gallery-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 10px 30px rgba(250, 248, 248, 0.2);
 }
 
-/* Responsive tweaks */
+.gallery-img-container {
+    width: 100%;
+    height: 220px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(75, 181, 247, 0.8);
+}
+
+.gallery-card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+.gallery-card-body {
+    padding: 1.5rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.gallery-card-title {
+    font-family: var(--font-heading);
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: var(--color-primary);
+    text-align: center;
+}
+
+.gallery-card-desc {
+    font-size: 0.95rem;
+    color: var(--color-text);
+    text-align: center;
+    margin-bottom: 0;
+    line-height: 1.5;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 1200px) {
+    .gallery-img-container {
+        height: 200px;
+        padding: 15px;
+    }
+}
+
+@media (max-width: 992px) {
+    .gallery-img-container {
+        height: 180px;
+    }
+    
+    .gallery-card-body {
+        padding: 1.25rem;
+    }
+}
+
 @media (max-width: 768px) {
-    .navbar-custom {
-        padding: 2rem 1rem;
-        border-radius: 0 0 50px 50px;
+    .gallery-section {
+        padding: 4rem 0;
     }
-
-    .navbar-brand-custom {
-        font-size: 1.5rem;
+    
+    .gallery-img-container {
+        height: 160px;
+        padding: 12px;
     }
+    
+    .gallery-card-title {
+        font-size: 1.1rem;
+    }
+    
+    .gallery-card-desc {
+        font-size: 0.85rem;
+    }
+}
 
-    .nav-link-custom {
-        font-size: 1rem;
+@media (max-width: 576px) {
+    .gallery-img-container {
+        height: 140px;
+    }
+    
+    .gallery-card-body {
+        padding: 1rem;
     }
 }
 
 
 
-/* Font unik untuk lokasi */
-.hero-subfont {
- font-family: 'Dancing Script', cursive;
-    font-size: 2.2rem;
+.footer-section {
+    background: #f9f9f9;
+    padding-top: 4rem;
+    padding-bottom: 2rem;
+    border-top: 1px solid #e1e1e1;
+    font-size: 0.95rem;
+    color: var(--color-text);
+}
+
+.footer-title {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    color: var(--color-primary);
+}
+
+.footer-desc {
+    font-size: 0.95rem;
+    color: var(--color-text-light);
+    margin-bottom: 1rem;
+    line-height: 1.6;
+}
+
+.footer-socials a {
+    display: inline-block;
+    color: white;
+    background: var(--color-primary);
+    width: 35px;
+    height: 35px;
+    line-height: 35px;
+    text-align: center;
+    border-radius: 50%;
+    margin-right: 10px;
+    transition: background 0.3s ease;
+}
+
+.footer-socials a:hover {
+    background: var(--color-secondary);
+    color: rgb(255, 255, 255);
+}
+
+.footer-links a {
     display: block;
-    margin-top: 0.5rem;
-    color: #ffffff;
-    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.3);
+    color: var(--color-text);
+    margin-bottom: 0.5rem;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.footer-links a:hover {
+    color: var(--color-primary);
+}
+
+.footer-contact li {
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--color-text);
+}
+
+/* Penyesuaian Font Heading untuk Fitur Sistem dan Dokumentasi Alat */
+.section-header h2,
+.gallery-section h2 {
+    font-family: var(--font-heading); /* Sesuaikan dengan hero-title */
+    font-weight: 700;
+    font-size: 2.2rem;
+    color: var(--color-primary);
 }
