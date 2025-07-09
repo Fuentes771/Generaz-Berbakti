@@ -27,13 +27,13 @@
 
 <!-- Tambahan Font Unik -->
 <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Dancing+Script&display=swap" rel="stylesheet">
-
+<link href="https://fonts.googleapis.com/css2?family=Satisfy&family=Clicker+Script&display=swap" rel="stylesheet">
 
 <!-- Google Fonts -->
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
 
 <!-- Gauge JS -->
-<script src="https://cdn.jsdelivr.net/npm/gaugeJS/dist/gauge.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gaugeJS@1.3.7/dist/gauge.min.js"></script>
 </head>
 <body>
 
@@ -60,7 +60,6 @@
     <div class="wave"></div>
 </section>
 
-
 <img src="img/cindy3.png" class="coffee-cup right" alt="Deskripsi gambar">
 <img src="img/cindy2.png" class="coffee-cup left" alt="Deskripsi gambar">
 
@@ -68,8 +67,11 @@
 <section class="features-section">
     <div class="container">
         <div class="section-header">
-            <h2>Fitur Sistem</h2>
-            <p>Teknologi canggih untuk deteksi dini</p>
+            <h2>FITUR          SISTEM</h2>
+            <p>"Dengan memanfaatkan teknologi Internet of Things (IoT) dan pemantauan berbasis data real-time, 
+                sistem ini terhubung langsung dengan sumber data resmi dari BMKG (Badan Meteorologi, Klimatologi, dan Geofisika),
+                 sehingga mampu menyajikan informasi akurat secara langsung ke pusat pemantauan 
+                 untuk merespons potensi ancaman tsunami dengan cepat, tepat, dan efisien."</p>
         </div>
         <div class="row g-4">
             <div class="col-md-4">
@@ -103,6 +105,79 @@
     </div>
 </section>
 
+
+
+
+
+<!-- Foto Alat Kami Section -->
+<section class="gallery-section py-5" style="background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);">
+    <div class="container">
+        <div class="section-header text-center mb-5">
+            <h2 class="mb-3 text-white">DOKUMENTASI ALAT KAMI</h2>
+            <p class="lead text-white">“Setiap alat yang kami kembangkan bukan sekadar teknologi, 
+                melainkan wujud nyata komitmen kami dalam melindungi masyarakat pesisir. 
+                Dirancang dengan kecanggihan dan diuji langsung di lapangan, s
+                istem ini terintegrasi dengan data BMKG dan mampu memberikan peringatan dini sebelum bahaya datang.”
+
+</p>
+        </div>
+        
+        <div class="row justify-content-center">
+            <!-- Card 1 -->
+            <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                <div class="gallery-card h-100">
+                    <div class="gallery-img-container">
+                        <img src="img/teluk1.png" alt="Alat Modern" class="gallery-card-img">
+                    </div>
+                    <div class="gallery-card-body">
+                        <h5 class="gallery-card-title">Alat Modern</h5>
+                        <p class="gallery-card-desc">Peralatan canggih untuk hasil terbaik</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Card 2 -->
+            <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                <div class="gallery-card h-100">
+                    <div class="gallery-img-container">
+                        <img src="img/teluk2.png" alt="Bahan Premium" class="gallery-card-img">
+                    </div>
+                    <div class="gallery-card-body">
+                        <h5 class="gallery-card-title">Bahan Premium</h5>
+                        <p class="gallery-card-desc">Hanya bahan terbaik yang kami gunakan</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Card 3 -->
+            <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                <div class="gallery-card h-100">
+                    <div class="gallery-img-container">
+                        <img src="img/teluk3.png" alt="Proses Higienis" class="gallery-card-img">
+                    </div>
+                    <div class="gallery-card-body">
+                        <h5 class="gallery-card-title">Proses Higienis</h5>
+                        <p class="gallery-card-desc">Standar kebersihan tinggi</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Card 4 -->
+            <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                <div class="gallery-card h-100">
+                    <div class="gallery-img-container">
+                        <img src="img/teluk4.png" alt="Ramah Lingkungan" class="gallery-card-img">
+                    </div>
+                    <div class="gallery-card-body">
+                        <h5 class="gallery-card-title">Ramah Lingkungan</h5>
+                        <p class="gallery-card-desc">Proses produksi berkelanjutan</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
 <!-- Include Footer -->
 <?php include 'php/footer.php'; ?>
 
@@ -110,6 +185,7 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 
 </body>
 </html>
