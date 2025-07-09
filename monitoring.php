@@ -16,6 +16,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 </head>
 <body>
 
@@ -27,34 +28,40 @@
   <p class="dashboard-subtitle">Pekon Teluk Kiluan Negri</p>
 </div>
 
-<!-- === LOKASI SENSOR === -->
-<div class="container mb-5">
-  <h3 class="mb-4 text-center text-uppercase fw-bold" style="font-family: 'Poppins', sans-serif;">
-    Lokasi Sensor
-  </h3>
-
-  <div class="card shadow-sm border-0">
-    <div class="card-body p-0 position-relative">
-      <div id="sensor-map" style="height: 480px; z-index: 0;"></div>
-
-      <!-- Keterangan -->
-      <div class="position-absolute top-0 end-0 m-3 bg-white shadow-sm rounded p-3" style="z-index: 1000;">
-        <h6 class="mb-2"><i class="fas fa-map-marker-alt text-primary me-2"></i>Lokasi</h6>
-        <div class="mb-1">
-          <i class="fas fa-bolt text-warning me-2"></i> Sensor Getaran Kasar
-        </div>
-        <div class="mb-1">
-          <i class="fas fa-ruler-combined text-danger me-2"></i> Sensor Getaran Halus
-        </div>
-        <div class="mb-1">
-          <i class="fas fa-leaf text-success me-2"></i> Sensor Lingkungan
+<!-- === RINGKASAN MONITORING === -->
+<div class="container mb-4">
+  <div class="row g-4 text-center">
+    <!-- Status Umum -->
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm rounded-4 p-3 h-100" style="background: linear-gradient(135deg, #dbeafe, #eff6ff);">
+        <div class="card-body">
+          <i class="fas fa-shield-alt fa-2x text-primary mb-2"></i>
+          <h6 class="text-uppercase fw-bold mb-1">Status Umum</h6>
+          <span id="status-umum" class="badge bg-success fs-6 px-3 py-1">AMAN</span>
         </div>
       </div>
     </div>
-    <div class="card-footer bg-light text-end">
-      <button class="btn btn-sm btn-primary" onclick="tambahSensorManual()">
-        <i class="fas fa-plus-circle me-1"></i> Tambah Sensor Manual
-      </button>
+
+    <!-- Ringkasan Sensor Aktif -->
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm rounded-4 p-3 h-100" style="background: linear-gradient(135deg, #ecfdf5, #f0fdfa);">
+        <div class="card-body">
+          <i class="fas fa-microchip fa-2x text-success mb-2"></i>
+          <h6 class="text-uppercase fw-bold mb-1">Sensor Aktif</h6>
+          <span class="fs-5 fw-bold"><span id="jumlah-sensor">3</span> Sensor</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Waktu Terakhir Update -->
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm rounded-4 p-3 h-100" style="background: linear-gradient(135deg, #fef3c7, #fefce8);">
+        <div class="card-body">
+          <i class="fas fa-clock fa-2x text-warning mb-2"></i>
+          <h6 class="text-uppercase fw-bold mb-1">Update Terakhir</h6>
+          <span id="waktu-update" class="fs-6 text-dark">-</span>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -236,58 +243,124 @@
   </div>
 </div>
 
+<!-- === LOKASI SENSOR === -->
+<div class="container mb-5">
+  <h3 class="mb-4 text-center text-uppercase fw-bold" style="font-family: 'Poppins', sans-serif;">
+    Lokasi Sensor
+  </h3>
 
+  <div class="row">
+    <!-- Kolom Peta -->
+    <div class="col-md-6">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body p-0 position-relative">
+          <div id="sensor-map" style="height: 480px;"></div>
+        </div>
+      </div>
+    </div>
 
-  <!-- Riwayat Sensor -->
-  <div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-      <span><i class="fas fa-history me-2"></i> Histori Sensor</span>
+    <!-- Kolom Detail Sensor -->
+    <div class="col-md-6">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <h5 class="mb-3"><i class="fas fa-info-circle text-primary me-2"></i>Detail Keterangan Sensor</h5>
+
+          <div class="mb-3 d-flex align-items-start">
+            <i class="fas fa-bolt text-warning fa-lg me-3 mt-1"></i>
+            <div>
+              <h6 class="fw-bold mb-1">Sensor Getaran Kasar</h6>
+              <p class="small text-muted mb-0">Sensor Piezoelektrik untuk deteksi getaran kuat di laut dalam.</p>
+            </div>
+          </div>
+
+          <div class="mb-3 d-flex align-items-start">
+            <i class="fas fa-ruler-combined text-danger fa-lg me-3 mt-1"></i>
+            <div>
+              <h6 class="fw-bold mb-1">Sensor Getaran Halus</h6>
+              <p class="small text-muted mb-0">MPU6050 untuk memantau getaran ringan bawah laut.</p>
+            </div>
+          </div>
+
+          <div class="mb-3 d-flex align-items-start">
+            <i class="fas fa-leaf text-success fa-lg me-3 mt-1"></i>
+            <div>
+              <h6 class="fw-bold mb-1">Sensor Lingkungan</h6>
+              <p class="small text-muted mb-0">BME280 membaca tekanan, suhu, dan kelembaban laut.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card shadow-sm mt-4">
+  <div class="card-header">
+    <strong>Simulasi Tsunami (Video Edukasi)</strong>
+  </div>
+  <div class="card-body text-center">
+    <video id="tsunamiVideo" width="100%" height="auto" controls>
+      <source src="video/simulasi-tsunami.mp4" type="video/mp4">
+      Browser Anda tidak mendukung pemutar video.
+    </video>
+  </div>
+</div>
+
+<!-- === RIWAYAT SENSOR === -->
+<div class="container my-5">
+  <div class="card shadow-sm border-0">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">
+        <i class="fas fa-history me-2 text-primary"></i> Riwayat Sensor
+      </h5>
       <div>
-        <button id="filter-logs" class="btn btn-sm btn-outline-secondary me-2">
+        <button id="filter-logs" class="btn btn-sm btn-outline-primary me-2">
           <i class="fas fa-filter"></i> Filter
         </button>
-        <button id="refresh-logs" class="btn btn-sm btn-outline-secondary">
+        <button id="refresh-logs" class="btn btn-sm btn-outline-primary">
           <i class="fas fa-sync-alt"></i> Refresh
         </button>
       </div>
     </div>
+
     <div class="card-body p-0">
-      <table class="table table-hover mb-0">
-        <thead class="table-light">
-          <tr>
-            <th>Waktu</th>
-            <th>Kejadian</th>
-            <th>Intensitas</th>
-            <th>Status</th>
-            <th>Aksi</th>
-          </tr>
-        </thead>
-        <tbody id="event-logs">
-          <tr>
-            <td colspan="5" class="text-center py-4">
-              <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Memuat...</span>
-              </div>
-              <div class="mt-2">Memuat histori sensor...</div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <div class="p-3 border-top">
-        <nav aria-label="Log navigation">
-          <ul class="pagination justify-content-center mb-0">
-            <li class="page-item disabled">
-              <a class="page-link" href="#" tabindex="-1">Previous</a>
-            </li>
-            <li class="page-item active"><a class="page-link" href="#">1</a></li>
-            <li class="page-item"><a class="page-link" href="#">2</a></li>
-            <li class="page-item"><a class="page-link" href="#">3</a></li>
-            <li class="page-item">
-              <a class="page-link" href="#">Next</a>
-            </li>
-          </ul>
-        </nav>
+      <div class="table-responsive">
+        <table class="table table-striped table-hover mb-0">
+          <thead class="table-light text-center">
+            <tr>
+              <th>Waktu</th>
+              <th>Sensor</th>
+              <th>Intensitas</th>
+              <th>Status</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="event-logs" class="text-center align-middle">
+            <!-- Data akan dimuat via JS -->
+            <tr>
+              <td colspan="5" class="text-center py-4">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden">Memuat...</span>
+                </div>
+                <div class="mt-2 text-muted">Memuat histori sensor...</div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
+    </div>
+
+    <div class="card-footer bg-light d-flex justify-content-between align-items-center">
+      <small class="text-muted">Menampilkan maksimum 10 histori terakhir</small>
+      <nav>
+        <ul class="pagination pagination-sm mb-0">
+          <li class="page-item disabled"><a class="page-link" href="#">Sebelumnya</a></li>
+          <li class="page-item active"><a class="page-link" href="#">1</a></li>
+          <li class="page-item"><a class="page-link" href="#">2</a></li>
+          <li class="page-item"><a class="page-link" href="#">3</a></li>
+          <li class="page-item"><a class="page-link" href="#">Selanjutnya</a></li>
+        </ul>
+      </nav>
     </div>
   </div>
 </div>
@@ -309,39 +382,52 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/dist/chartjs-plugin-zoom.min.js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="js/monitoring.js"></script>
 
 <script>
-  const map = L.map('sensor-map').setView([-5.5, 105.5], 6); // Sesuaikan lokasi awal
+  const map = L.map('sensor-map').setView([-5.5, 105.5], 8); // Sesuaikan titik tengah
 
-  // Tambahkan Tile Layer
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap'
   }).addTo(map);
 
-  // Tambah Marker Sensor Getaran Kasar
-  const kasarMarker = L.marker([-5.63, 105.55], {
-    icon: L.divIcon({className: 'text-warning', html: '<i class="fas fa-bolt fa-lg"></i>'})
-  }).addTo(map).bindPopup("Sensor Getaran Kasar");
+  // === Marker Koordinat Tetap ===
+  const sensors = [
+    {
+      name: "Sensor Getaran Kasar",
+      lat: -5.650,
+      lng: 105.300,
+      iconColor: "#f1c40f",
+      iconClass: "fas fa-bolt"
+    },
+    {
+      name: "Sensor Getaran Halus",
+      lat: -5.675,
+      lng: 105.250,
+      iconColor: "#e74c3c",
+      iconClass: "fas fa-ruler-combined"
+    },
+    {
+      name: "Sensor Lingkungan",
+      lat: -5.700,
+      lng: 105.200,
+      iconColor: "#2ecc71",
+      iconClass: "fas fa-leaf"
+    }
+  ];
 
-  // Tambah Marker Sensor Getaran Halus
-  const halusMarker = L.marker([-5.65, 105.52], {
-    icon: L.divIcon({className: 'text-danger', html: '<i class="fas fa-ruler-combined fa-lg"></i>'})
-  }).addTo(map).bindPopup("Sensor Getaran Halus");
-
-  // Tambah Marker Sensor Lingkungan
-  const lingkunganMarker = L.marker([-5.66, 105.50], {
-    icon: L.divIcon({className: 'text-success', html: '<i class="fas fa-leaf fa-lg"></i>'})
-  }).addTo(map).bindPopup("Sensor Lingkungan");
-
-  // Fungsi untuk tambah sensor manual
-  function tambahSensorManual() {
-    map.once('click', function (e) {
-      const marker = L.marker(e.latlng).addTo(map)
-        .bindPopup("Sensor Baru")
-        .openPopup();
+  sensors.forEach(sensor => {
+    const customIcon = L.divIcon({
+      html: `<i class="${sensor.iconClass}" style="color: ${sensor.iconColor}; font-size: 1.2rem;"></i>`,
+      className: 'text-center'
     });
-  }
+
+    L.marker([sensor.lat, sensor.lng], { icon: customIcon })
+      .addTo(map)
+      .bindPopup(`<strong>${sensor.name}</strong><br>Lat: ${sensor.lat}, Lng: ${sensor.lng}`);
+  });
 </script>
 
 <script>
@@ -515,7 +601,7 @@
 
 <script>
 function updateMPUData() {
-  fetch('http://192.168.137.166/getAllData') // ganti IP sesuai IP ESP32
+  fetch('http://1/getAllData') // ganti IP sesuai IP ESP32
     .then(response => response.json())
     .then(data => {
       const value = data.mpu6050;
@@ -542,6 +628,125 @@ function updateMPUData() {
 
 // jalankan per 3 detik
 setInterval(updateMPUData, 3000);
+</script>
+
+<script>
+const canvas = document.getElementById("canvas-tsunami");
+const ctx = canvas.getContext("2d");
+canvas.width = canvas.offsetWidth;
+canvas.height = 300;
+
+let waveOffset = 0;
+let isSimulasiAktif = false;
+
+function drawTsunami() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  ctx.beginPath();
+  for (let x = 0; x <= canvas.width; x++) {
+    const y = 50 * Math.sin((x + waveOffset) * 0.04) + 150;
+    ctx.lineTo(x, y);
+  }
+
+  ctx.lineTo(canvas.width, canvas.height);
+  ctx.lineTo(0, canvas.height);
+  ctx.closePath();
+
+  ctx.fillStyle = '#0d6efd88'; // transparan biru
+  ctx.fill();
+
+  waveOffset += 3;
+
+  if (isSimulasiAktif) {
+    requestAnimationFrame(drawTsunami);
+  }
+}
+
+function jalankanSimulasi() {
+  isSimulasiAktif = true;
+  waveOffset = 0;
+  drawTsunami();
+
+  // Stop otomatis setelah 10 detik
+  setTimeout(() => {
+    isSimulasiAktif = false;
+  }, 10000);
+}
+</script>
+
+<script>
+  function loadSensorHistory() {
+    fetch("http://10.62.58.237/getAllData") // Ganti IP dengan IP ESP32
+      .then(res => res.json())
+      .then(data => {
+        const tbody = document.getElementById("event-logs");
+        tbody.innerHTML = ""; // Kosongkan dulu
+
+        const logs = [
+          {
+            time: data.timestamp,
+            sensor: "Getaran Kasar (Piezo)",
+            value: data.vibration,
+            status: getStatus(data.vibration, 50, 80)
+          },
+          {
+            time: data.timestamp,
+            sensor: "Getaran Halus (MPU6050)",
+            value: data.mpu6050,
+            status: getStatus(data.mpu6050, 40, 70)
+          },
+          {
+            time: data.timestamp,
+            sensor: "Tekanan/Lingkungan (BME)",
+            value: data.bme680,
+            status: getStatus(data.bme680, 70, 90)
+          }
+        ];
+
+        logs.forEach(log => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${log.time}</td>
+            <td>${log.sensor}</td>
+            <td>${log.value}</td>
+            <td>
+              <span class="badge ${getBadge(log.status)}">${log.status}</span>
+            </td>
+            <td>
+              <button class="btn btn-sm btn-outline-info">
+                <i class="fas fa-search"></i> Detail
+              </button>
+            </td>
+          `;
+          tbody.appendChild(row);
+        });
+      })
+      .catch(err => {
+        const tbody = document.getElementById("event-logs");
+        tbody.innerHTML = `
+          <tr><td colspan="5" class="text-danger text-center">Gagal memuat data.</td></tr>
+        `;
+        console.error("Gagal fetch data:", err);
+      });
+  }
+
+  function getStatus(value, warning, danger) {
+    if (value >= danger) return "Bahaya";
+    if (value >= warning) return "Waspada";
+    return "Normal";
+  }
+
+  function getBadge(status) {
+    if (status === "Bahaya") return "bg-danger";
+    if (status === "Waspada") return "bg-warning text-dark";
+    return "bg-success";
+  }
+
+  // Event listener tombol refresh
+  document.getElementById("refresh-logs").addEventListener("click", loadSensorHistory);
+
+  // Auto-load saat halaman dibuka
+  loadSensorHistory();
 </script>
 
 </body>
