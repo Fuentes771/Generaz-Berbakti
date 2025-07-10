@@ -1,6 +1,6 @@
 // monitoring.js
 
-const espIp = "192.168.241.203"; // Atur IP ESP Anda
+const espIp = "10.62.58.237"; // Atur IP ESP Anda
 let vibrationGauge, vibrationChart;
 let dataHistory = [], maxHistory = 20;
 let isAlertActive = false;
