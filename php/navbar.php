@@ -30,9 +30,7 @@
       <span class="badge bg-success px-3 py-2">
         <i class="fas fa-circle me-1"></i> Connected
       </span>
-      <span class="admin-label text-white">
-        <i class="fas fa-user me-1"></i> Admin
-      </span>
     </div>
   </div>
+
 </nav>

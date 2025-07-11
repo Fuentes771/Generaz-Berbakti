@@ -116,8 +116,7 @@
             <h2 class="mb-3 text-white">DOKUMENTASI ALAT KAMI</h2>
             <p class="lead text-white">“Setiap alat yang kami kembangkan bukan sekadar teknologi, 
                 melainkan wujud nyata komitmen kami dalam melindungi masyarakat pesisir. 
-                Dirancang dengan kecanggihan dan diuji langsung di lapangan, s
-                istem ini terintegrasi dengan data BMKG dan mampu memberikan peringatan dini sebelum bahaya datang.”
+                Dirancang dengan kecanggihan dan diuji langsung di lapangan, sistem ini terintegrasi dengan data BMKG dan mampu memberikan peringatan dini sebelum bahaya datang.”
 
 </p>
         </div>

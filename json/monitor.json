@@ -1,0 +1,12 @@
+{
+  "mpu6050": 1.02,
+  "timestamp_mpu": "78900",
+  "pressure": 1005.42,
+  "pressureStatus": "Waspada",
+  "timestamp_bme": "78900",
+  "vibration": 320,
+  "timestamp_piezo": "78900",
+  "gps_lat": "-7.123456",
+  "gps_lng": "110.123456",
+  "timestamp": "78900"
+}
