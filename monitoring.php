@@ -273,65 +273,6 @@
   </div>
 </div>
 
-<!-- === RIWAYAT SENSOR === -->
-<div class="container my-5">
-  <div class="card shadow-sm border-0">
-    <div class="card-header bg-white d-flex justify-content-between align-items-center">
-      <h5 class="mb-0">
-        <i class="fas fa-history me-2 text-primary"></i> Riwayat Sensor
-      </h5>
-      <div>
-        <button id="filter-logs" class="btn btn-sm btn-outline-primary me-2">
-          <i class="fas fa-filter"></i> Filter
-        </button>
-        <button id="refresh-logs" class="btn btn-sm btn-outline-primary">
-          <i class="fas fa-sync-alt"></i> Refresh
-        </button>
-      </div>
-    </div>
-
-    <div class="card-body p-0">
-      <div class="table-responsive">
-        <table class="table table-striped table-hover mb-0">
-          <thead class="table-light text-center">
-            <tr>
-              <th>Waktu</th>
-              <th>Sensor</th>
-              <th>Intensitas</th>
-              <th>Status</th>
-              <th>Aksi</th>
-            </tr>
-          </thead>
-          <tbody id="event-logs" class="text-center align-middle">
-            <!-- Data akan dimuat via JS -->
-            <tr>
-              <td colspan="5" class="text-center py-4">
-                <div class="spinner-border text-primary" role="status">
-                  <span class="visually-hidden">Memuat...</span>
-                </div>
-                <div class="mt-2 text-muted">Memuat histori sensor...</div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="card-footer bg-light d-flex justify-content-between align-items-center">
-      <small class="text-muted">Menampilkan maksimum 10 histori terakhir</small>
-      <nav>
-        <ul class="pagination pagination-sm mb-0">
-          <li class="page-item disabled"><a class="page-link" href="#">Sebelumnya</a></li>
-          <li class="page-item active"><a class="page-link" href="#">1</a></li>
-          <li class="page-item"><a class="page-link" href="#">2</a></li>
-          <li class="page-item"><a class="page-link" href="#">3</a></li>
-          <li class="page-item"><a class="page-link" href="#">Selanjutnya</a></li>
-        </ul>
-      </nav>
-    </div>
-  </div>
-</div>
-
 <?php include 'php/footer.php'; ?>
 
 <!-- Audio -->
