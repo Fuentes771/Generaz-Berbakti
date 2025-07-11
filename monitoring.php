@@ -236,8 +236,6 @@
   </div>
 </div>
 
-
-
   <!-- Riwayat Sensor -->
   <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
@@ -255,7 +253,7 @@
       <table class="table table-hover mb-0">
         <thead class="table-light">
           <tr>
-            <th>Waktu</th>
+            <th>Watu</th>
             <th>Kejadian</th>
             <th>Intensitas</th>
             <th>Status</th>
@@ -306,13 +304,11 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="js/map.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/dist/chartjs-plugin-zoom.min.js"></script>
 
-
 <script>
-  const map = L.map('sensor-map').setView([-5.5, 105.5], 6); // Sesuaikan lokasi awal
+  // Inisialisasi Peta
+  const map = L.map('sensor-map').setView([-5.5, 105.5], 6);
 
   // Tambahkan Tile Layer
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -342,12 +338,10 @@
         .openPopup();
     });
   }
-</script>
 
-<script>
-  const ctx = document.getElementById('vibration-chart').getContext('2d');
-
-  const vibrationChart = new Chart(ctx, {
+  // Grafik Getaran Kasar
+  const vibrationCtx = document.getElementById('vibration-chart').getContext('2d');
+  const vibrationChart = new Chart(vibrationCtx, {
     type: 'line',
     data: {
       labels: [],
@@ -426,33 +420,7 @@
     vibrationChart.update();
   }
 
-  setInterval(fetchPiezoData, 3000);
-</script>
-
-<script>
-  const periodButtons = document.querySelectorAll('[data-period]');
-  periodButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      periodButtons.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-
-      const period = btn.getAttribute('data-period');
-      vibrationChart.data.labels = [];
-      vibrationChart.data.datasets[0].data = [];
-
-      // Buat data dummy sesuai waktu untuk demo
-      const count = period === 'hour' ? 10 : period === 'day' ? 24 : 7;
-      for (let i = 0; i < count; i++) {
-        vibrationChart.data.labels.push(`${i + 1}`);
-        vibrationChart.data.datasets[0].data.push(Math.floor(Math.random() * 100));
-      }
-
-      vibrationChart.update();
-    });
-  });
-</script>
-
-<script>
+  // Grafik Getaran Halus
   const mpuCtx = document.getElementById('mpu-chart').getContext('2d');
   const mpuChart = new Chart(mpuCtx, {
     type: 'line',
@@ -513,35 +481,58 @@
     }
   });
 
-<script>
-function updateMPUData() {
-  fetch('http://192.168.137.166/getAllData') // ganti IP sesuai IP ESP32
-    .then(response => response.json())
-    .then(data => {
-      const value = data.mpu6050;
-      const time = data.timestamp_mpu;
+  // Fungsi untuk update data MPU6050
+  function updateMPUData() {
+    fetch('http://10.79.185.237/getAllData') // ganti IP sesuai IP ESP32
+      .then(response => response.json())
+      .then(data => {
+        const value = data.mpu6050;
+        const time = data.timestamp_mpu;
 
-      document.getElementById("mpu-value").textContent = value;
-      document.getElementById("mpu-timestamp").textContent = time;
-      document.getElementById("mpu-progress").style.width = Math.min(value * 10, 100) + "%";
+        document.getElementById("mpu-value").textContent = value;
+        document.getElementById("mpu-timestamp").textContent = time;
+        document.getElementById("mpu-progress").style.width = Math.min(value * 10, 100) + "%";
 
-      const status = document.getElementById("mpu-status");
-      if (value >= 70) {
-        status.textContent = "Bahaya";
-        status.className = "text-danger";
-      } else if (value >= 40) {
-        status.textContent = "Waspada";
-        status.className = "text-warning";
-      } else {
-        status.textContent = "Normal";
-        status.className = "text-success";
+        const status = document.getElementById("mpu-status");
+        if (value >= 70) {
+          status.textContent = "Bahaya";
+          status.className = "text-danger";
+        } else if (value >= 40) {
+          status.textContent = "Waspada";
+          status.className = "text-warning";
+        } else {
+          status.textContent = "Normal";
+          status.className = "text-success";
+        }
+      })
+      .catch(error => console.error("Gagal fetch:", error));
+  }
+
+  // Event listener untuk period buttons
+  const periodButtons = document.querySelectorAll('[data-period]');
+  periodButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      periodButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const period = btn.getAttribute('data-period');
+      vibrationChart.data.labels = [];
+      vibrationChart.data.datasets[0].data = [];
+
+      // Buat data dummy sesuai waktu untuk demo
+      const count = period === 'hour' ? 10 : period === 'day' ? 24 : 7;
+      for (let i = 0; i < count; i++) {
+        vibrationChart.data.labels.push(`${i + 1}`);
+        vibrationChart.data.datasets[0].data.push(Math.floor(Math.random() * 100));
       }
-    })
-    .catch(error => console.error("Gagal fetch:", error));
-}
 
-// jalankan per 3 detik
-setInterval(updateMPUData, 3000);
+      vibrationChart.update();
+    });
+  });
+
+  // Jalankan fungsi-fungsi secara periodik
+  setInterval(fetchPiezoData, 3000);
+  setInterval(updateMPUData, 3000);
 </script>
 
 </body>
