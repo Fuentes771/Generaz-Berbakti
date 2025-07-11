@@ -235,3 +235,36 @@ $(document).ready(function() {
 if (value >= 80) {
   document.getElementById("tsunamiVideo").play();
 }
+
+// Gempa real-time
+function fetchGempa() {
+  fetch("https://data.bmkg.go.id/gempabumi/autogempa.json")
+    .then(res => res.json())
+    .then(res => {
+      const gempa = res.Infogempa.gempa;
+      document.getElementById("gempa-waktu").innerText = gempa.Tanggal + ' ' + gempa.Jam;
+      document.getElementById("gempa-magnitude").innerText = gempa.M + ' SR';
+      document.getElementById("gempa-lokasi").innerText = gempa.Wilayah;
+      // Jika potensi tsunami, tampilkan sirine atau highlight
+      if (gempa.Potensi === "Tsunami") {
+        document.getElementById("sirine-status").classList.add("bg-danger");
+        document.getElementById("sirine-status").innerText = "🚨 POTENSI TSUNAMI!";
+      }
+    })
+    .catch(err => console.error("Gempa fetch error:", err));
+}
+setInterval(fetchGempa, 60000);
+fetchGempa();
+
+// Cuaca / Sirine
+function fetchCuaca(provinceId, districtId) {
+  fetch(`https://bmkg-cuaca-api.vercel.app/cuaca?provinceId=${provinceId}&districtId=${districtId}`)
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById("sirine-cuaca").innerText = data.weather_desc;
+      document.getElementById("sirine-suhu").innerText = data.temperature + '°C';
+    })
+    .catch(err => console.error("Cuaca fetch error:", err));
+}
+fetchCuaca("13", "1371");  // contoh ID Lampung
+setInterval(() => fetchCuaca("13", "1371"), 1800000);

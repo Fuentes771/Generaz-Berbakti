@@ -406,6 +406,38 @@
   });
 
 <script>
+// Fungsi untuk update status monitoring
+function updateMonitoringStatus() {
+  // Simulasi data sensor (dalam aplikasi nyata, ini akan didapat dari API/backend)
+  const sensorData = {
+    status: "EX", // Status bisa "EX" (Bahaya) atau lainnya (Aman)
+    activeSensors: 3,
+    lastUpdate: new Date().toLocaleString()
+  };
+
+  // Update tampilan berdasarkan data sensor
+  const statusElement = document.getElementById('status-umum');
+  
+  if (sensorData.status === "EX") {
+    statusElement.textContent = "BAHAYA";
+    statusElement.className = "badge bg-danger fs-6 px-3 py-1";
+  } else {
+    statusElement.textContent = "AMAN";
+    statusElement.className = "badge bg-success fs-6 px-3 py-1";
+  }
+
+  document.getElementById('jumlah-sensor').textContent = sensorData.activeSensors;
+  document.getElementById('waktu-update').textContent = sensorData.lastUpdate;
+}
+
+// Panggil fungsi pertama kali
+updateMonitoringStatus();
+
+// Update setiap 5 detik (simulasi real-time)
+setInterval(updateMonitoringStatus, 5000);
+</script>
+
+<script>
 setInterval(() => {
   fetch("http://192.168.4.1/getAllData")  // ganti dengan IP ESP32 S3 kamu
     .then(res => res.json())
