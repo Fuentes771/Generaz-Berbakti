@@ -1,83 +1,129 @@
-/* style/styles.css */
-
+/* ====== Global Styles ====== */
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-image: url('images/gambar1.jpeg');
-    background-size: cover;
-    background-attachment: fixed;
-    background-repeat: no-repeat;
-    color: #fff;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-image: url('../images/gambar1.jpeg');
+  background-size: cover;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  color: #ffffff;
+  margin: 0;
+  padding: 0;
+  scroll-behavior: smooth;
 }
 
-/* Overlay to darken the background */
-body::before {
-    content: '';
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: rgba(0, 0, 50, 0.5);
-    z-index: -1;
+/* ====== Spacing from Fixed Navbar ====== */
+.page-top-space {
+  padding-top: 100px;
 }
 
-h1, h3 {
-    color: #00ffff;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+/* ====== Decorative Images ====== */
+.dolphin {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 100px;
+  opacity: 0.8;
+  animation: swim 10s linear infinite;
+  z-index: 0;
 }
 
+.coral {
+  position: absolute;
+  bottom: 0;
+  left: 20px;
+  width: 120px;
+  opacity: 0.9;
+  z-index: 0;
+}
+
+/* ====== Animations ====== */
+@keyframes swim {
+  0% { transform: translateX(0); }
+  50% { transform: translateX(-80px) translateY(10px); }
+  100% { transform: translateX(0); }
+}
+
+/* ====== Container Glass Effect ====== */
+.glass-content {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 20px;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.2);
+  padding: 2rem;
+  max-width: 960px;
+  color: #ffffff;
+}
+
+/* ====== Text Effects ====== */
+h1, h3, .text-glow {
+  color: #00ffff;
+  text-shadow: 0 0 5px #00ffff, 0 0 15px #00ffff;
+}
+
+p.lead {
+  color: #ffffff;
+  font-size: 1.2rem;
+}
+
+/* ====== Cards & Sections ====== */
 .card {
-    background-color: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(10px);
-    border-radius: 15px;
-    transition: transform 0.3s ease;
+  background-color: rgba(255, 255, 255, 0.15);
+  border: none;
+  border-radius: 15px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #ffffff;
+  transition: transform 0.3s ease;
 }
 
 .card:hover {
-    transform: scale(1.02);
+  transform: scale(1.02);
 }
 
+/* ====== Team Member Style ====== */
 .team-member {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 10px;
-    color: #fff;
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 15px;
+  color: #ffffff;
+  transition: all 0.3s ease;
+}
+
+.team-member:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-5px);
+}
+
+/* ====== Tech Stack Style ====== */
+.tech-item {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 15px;
+  padding: 1rem;
+  color: #ffffff;
+  transition: transform 0.3s ease;
 }
 
 .tech-item i {
-    color: #00ffff;
+  color: #00ffff;
 }
 
-.tech-item {
-    background: rgba(0, 0, 0, 0.2);
-    color: #fff;
-    border-radius: 10px;
+.tech-item:hover {
+  transform: scale(1.05);
+  background-color: rgba(0, 0, 0, 0.3);
 }
 
-.container {
-    position: relative;
-}
+/* ====== Responsive Adjustment ====== */
+@media (max-width: 768px) {
+  .glass-content {
+    padding: 1rem;
+  }
 
-/* Decorative dolphin image */
-.dolphin {
-    position: absolute;
-    top: -60px;
-    right: 10px;
-    width: 100px;
-    animation: swim 8s infinite linear;
-    opacity: 0.8;
-}
+  .dolphin {
+    display: none;
+  }
 
-/* Decorative coral image */
-.coral {
-    position: absolute;
-    bottom: -30px;
-    left: 20px;
-    width: 120px;
-    opacity: 0.9;
-}
-
-/* Animation */
-@keyframes swim {
-    0% { transform: translateX(0); }
-    50% { transform: translateX(-100px) translateY(20px); }
-    100% { transform: translateX(0); }
+  .coral {
+    width: 80px;
+  }
 }
