@@ -1,0 +1,123 @@
+/**
+ * About Page Styles
+ * 
+ * @version 1.1.0
+ */
+
+:root {
+    --about-primary: #00ffff;
+    --about-bg-overlay: rgba(0, 0, 50, 0.5);
+    --card-bg: rgba(255, 255, 255, 0.15);
+    --tech-item-bg: rgba(0, 0, 0, 0.2);
+}
+
+/* Base Styles */
+.about-body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-image: url('../images/gambar1.jpeg');
+    background-size: cover;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    color: #fff;
+    position: relative;
+}
+
+.about-body::before {
+    content: '';
+    position: fixed;
+    top: 0; 
+    left: 0;
+    width: 100%; 
+    height: 100%;
+    background: var(--about-bg-overlay);
+    z-index: -1;
+}
+
+/* Typography */
+.about-body h1, 
+.about-body h3 {
+    color: var(--about-primary);
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+}
+
+/* Cards */
+.about-card {
+    background-color: var(--card-bg);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    transition: transform 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.about-card:hover {
+    transform: scale(1.02);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+/* Team Section */
+.team-member {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+    color: #fff;
+    transition: all 0.3s ease;
+}
+
+.team-member:hover {
+    transform: translateY(-5px);
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Technology Items */
+.tech-item {
+    background: var(--tech-item-bg);
+    color: #fff;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.tech-item:hover {
+    transform: scale(1.05);
+}
+
+.tech-item i {
+    color: var(--about-primary);
+}
+
+/* Decorative Elements */
+.decorative {
+    position: absolute;
+    opacity: 0.8;
+    z-index: -1;
+}
+
+.dolphin {
+    top: -60px;
+    right: 10px;
+    width: 100px;
+    animation: swim 8s infinite linear;
+}
+
+.coral {
+    bottom: -30px;
+    left: 20px;
+    width: 120px;
+}
+
+/* Animations */
+@keyframes swim {
+    0% { transform: translateX(0); }
+    50% { transform: translateX(-100px) translateY(20px); }
+    100% { transform: translateX(0); }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .dolphin, .coral {
+        display: none;
+    }
+    
+    .about-body {
+        background-attachment: scroll;
+    }
+}
