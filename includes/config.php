@@ -21,7 +21,7 @@ define('API_KEY', 'TSUNAMI_' . bin2hex(random_bytes(16)));
 define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
 define('DB_USER', getenv('DB_USER') ?: 'root');
 define('DB_PASS', getenv('DB_PASS') ?: '');
-define('DB_NAME', getenv('DB_NAME') ?: 'tsunami_monitoring');
+define('DB_NAME', getenv('DB_NAME') ?: 'tsunami_warning');
 define('DB_CHARSET', 'utf8mb4');
 
 // IoT Device Configuration

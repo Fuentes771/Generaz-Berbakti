@@ -1,3 +1,9 @@
+<?php
+// Definisikan BASE_URL sebelum include navbar
+define('BASE_URL', 'http://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['SCRIPT_NAME']) . '/');
+define('CURRENT_PAGE', basename($_SERVER['SCRIPT_NAME']));
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,7 +21,7 @@
 <body>
 
   <!-- Navbar -->
-  <?php include 'php/navbar.php'; ?>
+  <?php include 'includes/navbar.php'; ?>
 
   <!-- Background Decoration -->
   <img src="images/dolphin.png" alt="Dolphin" class="dolphin" />

@@ -31,7 +31,7 @@ include 'includes/navbar.php';
 ?>
 
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="dark">
+<html lang="en" data-bs-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -47,7 +47,6 @@ include 'includes/navbar.php';
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Pacifico&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<?= ASSETS_PATH ?>/css/monitoring.css">
     
-
 </head>
 <body>
     <!-- Alert Banner (Fixed at Top) -->
