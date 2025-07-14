@@ -1,576 +1,400 @@
 <?php
+require_once 'includes/config.php';
+
+try {
+    $conn = new PDO(
+        "mysql:host=".DB_HOST.";dbname=".DB_NAME.";charset=".DB_CHARSET,
+        DB_USER,
+        DB_PASS,
+        [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+        ]
+    );
+    echo "Koneksi database BERHASIL!";
+} catch (PDOException $e) {
+    echo "ERROR: " . $e->getMessage();
+}
+
+// Get latest data from database
+$db = get_db_connection();
+$latestData = $db->query("
+    SELECT * FROM sensor_data 
+    ORDER BY timestamp DESC 
+    LIMIT 1
+")->fetch() ?? [];
+
+$pageTitle = "Tsunami Monitoring Dashboard";
+$activePage = "monitoring";
+
+include 'includes/navbar.php';
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="light">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Monitoring Tsunami</title>
-
-  <!-- CSS -->
-  <link rel="stylesheet" href="style/styles.css">        <!-- umum/global -->
-  <link rel="stylesheet" href="style/monitoring.css">    <!-- khusus dashboard -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?= htmlspecialchars($pageTitle) ?></title>
+    
+    <!-- Favicon -->
+    <link rel="icon" href="<?= ASSETS_PATH ?>/img/favicon.ico">
+    
+    <!-- CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Pacifico&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="<?= ASSETS_PATH ?>/css/monitoring.css">
+    
 </head>
 <body>
-
-<?php include 'php/navbar.php'; ?>
-
-<!-- Header Tsunami Sistem -->
-<div class="container py-5 text-center header-monitor">
-  <h1 class="dashboard-title">SISTEM DETEKSI DINI <br> TSUNAMI</h1>
-  <p class="dashboard-subtitle">Pekon Teluk Kiluan Negri</p>
-</div>
-
-<!-- === RINGKASAN MONITORING === -->
-<div class="container mb-4">
-  <div class="row g-4 text-center">
-    <!-- Status Umum -->
-    <div class="col-md-4">
-      <div class="card border-0 shadow-sm rounded-4 p-3 h-100" style="background: linear-gradient(135deg, #dbeafe, #eff6ff);">
-        <div class="card-body">
-          <i class="fas fa-shield-alt fa-2x text-primary mb-2"></i>
-          <h6 class="text-uppercase fw-bold mb-1">Status Umum</h6>
-          <span id="status-umum" class="badge bg-success fs-6 px-3 py-1">AMAN</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Ringkasan Sensor Aktif -->
-    <div class="col-md-4">
-      <div class="card border-0 shadow-sm rounded-4 p-3 h-100" style="background: linear-gradient(135deg, #ecfdf5, #f0fdfa);">
-        <div class="card-body">
-          <i class="fas fa-microchip fa-2x text-success mb-2"></i>
-          <h6 class="text-uppercase fw-bold mb-1">Sensor Aktif</h6>
-          <span class="fs-5 fw-bold"><span id="jumlah-sensor">3</span> Sensor</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Waktu Terakhir Update -->
-    <div class="col-md-4">
-      <div class="card border-0 shadow-sm rounded-4 p-3 h-100" style="background: linear-gradient(135deg, #fef3c7, #fefce8);">
-        <div class="card-body">
-          <i class="fas fa-clock fa-2x text-warning mb-2"></i>
-          <h6 class="text-uppercase fw-bold mb-1">Update Terakhir</h6>
-          <span id="waktu-update" class="fs-6 text-dark">-</span>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="row mb-5">
-  <!-- CARD SENSOR PIEZO -->
-  <div class="col-md-6">
-    <div class="card shadow border-0" style="border-radius: 18px; background: linear-gradient(135deg, #e3f2fd, #ffffff);">
-      <div class="card-body">
-        <div class="d-flex align-items-center mb-3">
-          <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
-            <i class="fas fa-wave-square fs-4"></i>
-          </div>
-          <div class="ms-3">
-            <h6 class="text-uppercase fw-bold mb-0">Sensor Getaran Kasar</h6>
-            <small class="text-muted">Piezoelektrik</small>
-          </div>
-        </div>
-
-        <div class="d-flex align-items-center mb-2">
-          <h2 class="fw-bold text-primary mb-0"><span id="piezo-value">0</span></h2>
-          <span class="text-muted ms-2">/100</span>
-        </div>
-
-        <div class="progress mb-2" style="height: 8px;">
-          <div class="progress-bar bg-info" id="piezo-progress" style="width: 0%;"></div>
-        </div>
-
-        <p class="mb-0 small">Status: <span class="fw-bold" id="piezo-status" style="color: green;">Normal</span></p>
-        <p class="mb-0 small text-end"><i class="fas fa-clock me-1"></i><span id="piezo-timestamp">-</span></p>
-      </div>
-    </div>
-
-    <!-- Deskripsi -->
-    <div class="mt-2 ps-2">
-      <p class="mb-1 small text-muted"><strong>Threshold:</strong> Waspada ≥ 50, Bahaya ≥ 80</p>
-      <p class="small text-muted">Sensor Piezo mendeteksi getaran kasar mendadak didasar laut atau pelampung, sebagai indikator awal pergeseran lempeng yang dapat menyebabkan tsunami.</p>
-    </div>
-  </div>
-
-  <!-- GRAFIK -->
-  <div class="col-md-6">
-    <div class="card">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <strong>Grafik Getaran Kasar</strong>
-        <div class="btn-group btn-group-sm">
-          <button class="btn btn-outline-secondary active" data-piezo-period="hour">1 Jam</button>
-          <button class="btn btn-outline-secondary" data-piezo-period="day">1 Hari</button>
-          <button class="btn btn-outline-secondary" data-piezo-period="week">1 Minggu</button>
-        </div>
-      </div>
-      <div class="card-body">
-        <canvas id="piezo-chart" height="250"></canvas>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="row mb-5">
-  <!-- Kartu Sensor MPU -->
-  <div class="col-md-6">
-    <div class="card shadow border-0" style="border-radius: 18px; background: linear-gradient(135deg, #f3e5f5, #ffffff);">
-      <div class="card-body">
-        <div class="d-flex align-items-center mb-3">
-          <div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
-            <i class="fas fa-ruler-combined fs-4"></i>
-          </div>
-          <div class="ms-3">
-            <h6 class="text-uppercase fw-bold mb-0">Sensor Getaran Halus</h6>
-            <small class="text-muted">MPU6050</small>
-          </div>
-        </div>
-
-        <div class="d-flex align-items-center mb-2">
-          <h2 class="fw-bold text-danger mb-0"><span id="mpu-value">0</span></h2>
-          <span class="text-muted ms-2">/100</span>
-        </div>
-
-        <div class="progress mb-2" style="height: 8px;">
-          <div class="progress-bar bg-danger" id="mpu-progress" style="width: 0%;"></div>
-        </div>
-
-        <p class="mb-0 small">Status: <span class="fw-bold" id="mpu-status" style="color: green;">Normal</span></p>
-        <p class="mb-0 small text-end"><i class="fas fa-clock me-1"></i><span id="mpu-timestamp">-</span></p>
-      </div>
-    </div>
-    <div class="mt-2 ps-2">
-      <p class="mb-1 small text-muted"><strong>Threshold:</strong> Waspada ≥ 40, Bahaya ≥ 70</p>
-      <p class="small text-muted">Sensor MPU6050 mendeteksi getaran kecil akibat aktivitas tektonik. Jika meningkat signifikan, bisa menandakan potensi tsunami perlahan.</p>
-    </div>
-  </div>
-
-  <!-- Grafik MPU -->
-  <div class="col-md-6">
-    <div class="card">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <strong>Grafik Getaran Halus</strong>
-        <div class="btn-group btn-group-sm">
-          <button class="btn btn-outline-secondary active" data-mpu-period="hour">1 Jam</button>
-          <button class="btn btn-outline-secondary" data-mpu-period="day">1 Hari</button>
-          <button class="btn btn-outline-secondary" data-mpu-period="week">1 Minggu</button>
-        </div>
-      </div>
-      <div class="card-body">
-        <canvas id="mpu-chart" height="250"></canvas>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="row mb-5">
-  <!-- Kartu Sensor BME -->
-  <div class="col-md-6">
-    <div class="card shadow border-0" style="border-radius: 18px; background: linear-gradient(135deg, #e0f7fa, #ffffff);">
-      <div class="card-body">
-        <div class="d-flex align-items-center mb-3">
-          <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
-            <i class="fas fa-leaf fs-4"></i>
-          </div>
-          <div class="ms-3">
-            <h6 class="text-uppercase fw-bold mb-0">Sensor Tekanan Udara</h6>
-            <small class="text-muted">BME280</small>
-          </div>
-        </div>
-
-        <div class="row text-center mb-2">
-          <div class="col-4">
-            <h6 class="fw-bold text-success"><span id="bme-temp">--</span>°C</h6>
-            <small class="text-muted">Suhu</small>
-          </div>
-          <div class="col-4">
-            <h6 class="fw-bold text-success"><span id="bme-hum">--</span>%</h6>
-            <small class="text-muted">Kelembapan</small>
-          </div>
-          <div class="col-4">
-            <h6 class="fw-bold text-success"><span id="bme-pres">--</span> hPa</h6>
-            <small class="text-muted">Tekanan</small>
-          </div>
-        </div>
-        <p class="mb-0 small text-end"><i class="fas fa-clock me-1"></i><span id="bme-timestamp">-</span></p>
-      </div>
-    </div>
-    <div class="mt-2 ps-2">
-      <p class="small text-muted">BME280 digunakan untuk membaca suhu, kelembapan, dan tekanan atmosfer. Perubahan signifikan dapat menjadi indikator gelombang laut atau perubahan cuaca ekstrem.</p>
-    </div>
-  </div>
-
-  <!-- Grafik BME -->
-  <div class="col-md-6">
-    <div class="card">
-      <div class="card-header">
-        <strong>Grafik Tekanan Udara</strong>
-      </div>
-      <div class="card-body">
-        <canvas id="bme-chart" height="250"></canvas>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- === LOKASI SENSOR === -->
-<div class="container mb-5">
-  <h3 class="mb-4 text-center text-uppercase fw-bold" style="font-family: 'Poppins', sans-serif;">
-    Lokasi Sensor
-  </h3>
-
-  <div class="row">
-    <!-- Kolom Peta -->
-    <div class="col-md-6">
-      <div class="card shadow-sm border-0 h-100">
-        <div class="card-body p-0 position-relative">
-          <div id="sensor-map" style="height: 480px;"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Kolom Detail Sensor -->
-    <div class="col-md-6">
-      <div class="card shadow-sm border-0 h-100">
-        <div class="card-body">
-          <h5 class="mb-3"><i class="fas fa-info-circle text-primary me-2"></i>Detail Keterangan Sensor</h5>
-
-          <div class="mb-3 d-flex align-items-start">
-            <i class="fas fa-bolt text-warning fa-lg me-3 mt-1"></i>
+    <!-- Alert Banner (Fixed at Top) -->
+    <div id="alert-banner" class="alert alert-danger alert-banner d-none mb-0">
+        <div class="container d-flex justify-content-between align-items-center">
             <div>
-              <h6 class="fw-bold mb-1">Sensor Getaran Kasar</h6>
-              <p class="small text-muted mb-0">Sensor Piezoelektrik untuk deteksi getaran kuat di laut dalam.</p>
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong id="alert-message">WARNING: System alert!</strong>
             </div>
-          </div>
-
-          <div class="mb-3 d-flex align-items-start">
-            <i class="fas fa-ruler-combined text-danger fa-lg me-3 mt-1"></i>
             <div>
-              <h6 class="fw-bold mb-1">Sensor Getaran Halus</h6>
-              <p class="small text-muted mb-0">MPU6050 untuk memantau getaran ringan bawah laut.</p>
+                <button id="silence-btn" class="btn btn-sm btn-outline-light me-2 d-none">
+                    <i class="fas fa-bell-slash me-1"></i> Silence
+                </button>
+                <button id="more-info-btn" class="btn btn-sm btn-light">
+                    <i class="fas fa-info-circle me-1"></i> Details
+                </button>
             </div>
-          </div>
-
-          <div class="mb-3 d-flex align-items-start">
-            <i class="fas fa-leaf text-success fa-lg me-3 mt-1"></i>
-            <div>
-              <h6 class="fw-bold mb-1">Sensor Lingkungan</h6>
-              <p class="small text-muted mb-0">BME280 membaca tekanan, suhu, dan kelembaban laut.</p>
-            </div>
-          </div>
         </div>
-      </div>
     </div>
-  </div>
-</div>
 
-<?php include 'php/footer.php'; ?>
+    <!-- Navbar is included from navbar.php -->
+    
+    <!-- Main Content -->
+    <main class="container py-4">
+        <!-- Dashboard Header -->
+        <div class="text-center mb-5">
+            <h1 class="dashboard-title display-4 mb-2">TSUNAMI EARLY DETECTION SYSTEM</h1>
+            <p class="lead text-muted">Real-time Coastal Monitoring Platform</p>
+            <div class="d-flex justify-content-center align-items-center gap-3 mt-3">
+                <span class="status-badge bg-secondary" id="connection-status">
+                    <i class="fas fa-circle-notch fa-spin me-1"></i> Connecting...
+                </span>
+                <span class="status-badge bg-secondary" id="system-status">
+                    <i class="fas fa-circle-notch fa-spin me-1"></i> Initializing...
+                </span>
+                <span class="status-badge bg-light text-dark" id="last-update">
+                    <i class="fas fa-clock me-1"></i> <?= date('Y-m-d H:i:s') ?>
+                </span>
+            </div>
+        </div>
 
-<!-- Audio -->
-<audio id="alert-sound" loop>
-  <source src="assets/alert.mp3" type="audio/mpeg">
-</audio>
+        <!-- Summary Cards -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <div class="card sensor-card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-shield-alt fa-3x text-primary mb-3"></i>
+                        <h5 class="card-title">System Status</h5>
+                        <div id="status-umum" class="status-badge bg-success mb-2">NORMAL</div>
+                        <p class="card-text small text-muted">Overall system condition based on all sensors</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card sensor-card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-satellite-dish fa-3x text-success mb-3"></i>
+                        <h5 class="card-title">Active Sensors</h5>
+                        <h2 class="mb-2"><span id="jumlah-sensor">3</span>/3</h2>
+                        <p class="card-text small text-muted">Sensors currently online and reporting data</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card sensor-card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-clock fa-3x text-warning mb-3"></i>
+                        <h5 class="card-title">Last Data Update</h5>
+                        <h4 class="mb-2"><span id="waktu-update"><?= $latestData['timestamp'] ?? '-' ?></span></h4>
+                        <p class="card-text small text-muted" id="last-analysis">Analyzing sensor data...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-<!-- JS Library -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/gaugeJS/dist/gauge.min.js"></script>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<script src="js/map.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/dist/chartjs-plugin-zoom.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<script src="js/monitoring.js"></script>
+        <!-- Vibration and Environmental Data -->
+        <div class="row g-4 mb-4">
+            <!-- Vibration Monitoring -->
+            <div class="col-lg-6">
+                <div class="card sensor-card h-100">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-wave-square me-2"></i>Vibration Monitoring</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="text-center position-relative">
+                                    <div id="vibration-gauge" class="gauge-container"></div>
+                                    <div class="gauge-value">
+                                        <span id="vibration-value">0</span>
+                                        <small class="text-muted">/ 10</small>
+                                    </div>
+                                    <p class="mb-0 text-muted">Current vibration level</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="chart-container">
+                                    <canvas id="vibration-chart" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Environmental Data -->
+            <div class="col-lg-6">
+                <div class="card sensor-card h-100">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="fas fa-leaf me-2"></i>Environmental Data</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center g-2 mb-3">
+                            <div class="col-md-4">
+                                <div class="p-3 rounded bg-light h-100">
+                                    <i class="fas fa-temperature-high fa-2x text-danger mb-2"></i>
+                                    <h4><span id="bme-temp"><?= $latestData['temperature'] ?? '--' ?></span>°C</h4>
+                                    <p class="mb-0 small text-muted">Temperature</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-3 rounded bg-light h-100">
+                                    <i class="fas fa-tint fa-2x text-info mb-2"></i>
+                                    <h4><span id="bme-hum"><?= $latestData['humidity'] ?? '--' ?></span>%</h4>
+                                    <p class="mb-0 small text-muted">Humidity</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-3 rounded bg-light h-100">
+                                    <i class="fas fa-tachometer-alt fa-2x text-warning mb-2"></i>
+                                    <h4><span id="bme-pres"><?= $latestData['pressure'] ?? '--' ?></span> hPa</h4>
+                                    <p class="mb-0 small text-muted">Pressure</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chart-container mt-2">
+                            <canvas id="bme-chart" height="150"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sensor Details -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-6">
+                <div class="card sensor-card h-100">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0"><i class="fas fa-ruler-combined me-2"></i>Fine Vibration Sensor (MPU6050)</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h2 class="mb-0"><span id="mpu-value"><?= $latestData['mpu6050'] ?? '0' ?></span></h2>
+                            <span class="status-badge bg-success" id="mpu-status">Normal</span>
+                        </div>
+                        <div class="progress progress-thin mb-3">
+                            <div id="mpu-progress" class="progress-bar bg-danger" style="width: 0%"></div>
+                        </div>
+                        <p class="small mb-1">Status: <span id="mpu-status-text">Normal operation</span></p>
+                        <p class="small mb-0 text-end text-muted"><i class="fas fa-clock me-1"></i> <span id="mpu-timestamp"><?= $latestData['timestamp'] ?? '-' ?></span></p>
+                        <div class="chart-container mt-3">
+                            <canvas id="mpu-chart" height="150"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card sensor-card h-100">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Coarse Vibration Sensor (Piezoelectric)</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h2 class="mb-0"><span id="piezo-value"><?= $latestData['vibration'] ?? '0' ?></span></h2>
+                            <span class="status-badge bg-success" id="piezo-status">Normal</span>
+                        </div>
+                        <div class="progress progress-thin mb-3">
+                            <div id="piezo-progress" class="progress-bar bg-warning" style="width: 0%"></div>
+                        </div>
+                        <p class="small mb-1">Status: <span id="piezo-status-text">Normal operation</span></p>
+                        <p class="small mb-0 text-end text-muted"><i class="fas fa-clock me-1"></i> <span id="piezo-timestamp"><?= $latestData['timestamp'] ?? '-' ?></span></p>
+                        <div class="chart-container mt-3">
+                            <canvas id="piezo-chart" height="150"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-<script>
-  const map = L.map('sensor-map').setView([-5.5, 105.5], 8); // Sesuaikan titik tengah
+        <!-- Sensor Map and Details -->
+        <div class="card sensor-card mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-map-marked-alt me-2"></i>Sensor Network</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-lg-8 mb-4 mb-lg-0">
+                        <div id="sensor-map"></div>
+                    </div>
+                    <div class="col-lg-4">
+                        <h5><i class="fas fa-info-circle text-info me-2"></i>Sensor Details</h5>
+                        <div class="list-group mb-4">
+                            <div class="list-group-item border-0 p-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="position-relative me-3" style="width: 40px; height: 40px;">
+                                        <div class="marker-pin orange"></div>
+                                        <div class="marker-pin orange"></div>
+                                        <i class="fas fa-bolt warning-icon"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-1">Piezoelectric Sensor</h6>
+                                        <p class="small mb-0 text-muted">Detects strong vibrations in the deep sea</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="list-group-item border-0 p-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="position-relative me-3" style="width: 40px; height: 40px;">
+                                        <div class="marker-pin red"></div>
+                                        <div class="marker-pin red"></div>
+                                        <i class="fas fa-ruler-combined danger-icon"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-1">MPU6050 Sensor</h6>
+                                        <p class="small mb-0 text-muted">Monitors subtle underwater vibrations</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="list-group-item border-0 p-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="position-relative me-3" style="width: 40px; height: 40px;">
+                                        <div class="marker-pin green"></div>
+                                        <div class="marker-pin green"></div>
+                                        <i class="fas fa-leaf success-icon"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-1">BME280 Sensor</h6>
+                                        <p class="small mb-0 text-muted">Measures atmospheric conditions</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h5><i class="fas fa-database text-info me-2"></i>Data Management</h5>
+                            <div class="list-group">
+                                <a href="history.php" class="list-group-item list-group-item-action border-0">
+                                    <i class="fas fa-chart-line me-2"></i>View Historical Charts
+                                </a>
+                                <a href="export.php" class="list-group-item list-group-item-action border-0">
+                                    <i class="fas fa-file-export me-2"></i>Export Data
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h5><i class="fas fa-cog text-info me-2"></i>System Controls</h5>
+                            <button id="refresh-data" class="btn btn-sm btn-outline-primary me-2">
+                                <i class="fas fa-sync-alt me-1"></i> Refresh Data
+                            </button>
+                            <button id="test-alarm" class="btn btn-sm btn-outline-warning">
+                                <i class="fas fa-bell me-1"></i> Test Alarm
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap'
-  }).addTo(map);
+        <!-- Event Logs -->
+        <div class="card sensor-card mb-4">
+            <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-clipboard-list me-2"></i>System Event Log</h5>
+                <div>
+                    <button id="refresh-logs" class="btn btn-sm btn-light">
+                        <i class="fas fa-sync-alt me-1"></i> Refresh
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="event-logs" class="small">
+                    <div class="text-center py-3">
+                        <div class="spinner-border text-secondary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2 text-muted">Loading event logs...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-  // === Marker Koordinat Tetap ===
-  const sensors = [
-    {
-      name: "Sensor Getaran Kasar",
-      lat: -5.650,
-      lng: 105.300,
-      iconColor: "#f1c40f",
-      iconClass: "fas fa-bolt"
-    },
-    {
-      name: "Sensor Getaran Halus",
-      lat: -5.675,
-      lng: 105.250,
-      iconColor: "#e74c3c",
-      iconClass: "fas fa-ruler-combined"
-    },
-    {
-      name: "Sensor Lingkungan",
-      lat: -5.700,
-      lng: 105.200,
-      iconColor: "#2ecc71",
-      iconClass: "fas fa-leaf"
-    }
-  ];
+        <!-- External Data -->
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="card sensor-card h-100">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0"><i class="fas fa-globe-asia me-2"></i>Earthquake Data</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="earthquake-data">
+                            <div class="text-center py-3">
+                                <div class="spinner-border text-secondary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="mt-2 text-muted">Loading earthquake data...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card sensor-card h-100">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-cloud-sun me-2"></i>Weather Data</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="weather-data">
+                            <div class="text-center py-3">
+                                <div class="spinner-border text-secondary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="mt-2 text-muted">Loading weather data...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
 
-  sensors.forEach(sensor => {
-    const customIcon = L.divIcon({
-      html: `<i class="${sensor.iconClass}" style="color: ${sensor.iconColor}; font-size: 1.2rem;"></i>`,
-      className: 'text-center'
-    });
+    <!-- Footer is included from footer.php -->
+    <?php include 'includes/footer.php'; ?>
 
-    L.marker([sensor.lat, sensor.lng], { icon: customIcon })
-      .addTo(map)
-      .bindPopup(`<strong>${sensor.name}</strong><br>Lat: ${sensor.lat}, Lng: ${sensor.lng}`);
-  });
-</script>
+    <!-- Audio Alert (Hidden) -->
+    <audio id="alert-sound" loop>
+        <source src="<?= ASSETS_PATH ?>/audio/alert.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
 
-<script>
-  const ctx = document.getElementById('vibration-chart').getContext('2d');
-
-  const vibrationChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: [],
-      datasets: [{
-        label: 'Intensitas Getaran',
-        data: [],
-        backgroundColor: 'rgba(79, 172, 254, 0.2)',
-        borderColor: '#4facfe',
-        borderWidth: 2,
-        fill: true,
-        tension: 0.4,
-        pointRadius: 3,
-        pointHoverRadius: 6,
-        pointBackgroundColor: '#00c6ff'
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      animation: {
-        duration: 1000,
-        easing: 'easeOutQuart'
-      },
-      plugins: {
-        tooltip: {
-          mode: 'index',
-          intersect: false,
-          backgroundColor: '#4facfe'
-        },
-        legend: {
-          display: false
-        },
-        zoom: {
-          zoom: {
-            wheel: { enabled: true },
-            pinch: { enabled: true },
-            mode: 'x',
-          },
-          pan: {
-            enabled: true,
-            mode: 'x',
-          },
-        }
-      },
-      scales: {
-        x: {
-          title: {
-            display: true,
-            text: 'Waktu'
-          }
-        },
-        y: {
-          title: {
-            display: true,
-            text: 'Nilai Getaran'
-          },
-          min: 0,
-          max: 100
-        }
-      }
-    }
-  });
-
-<script>
-// Fungsi untuk update status monitoring
-function updateMonitoringStatus() {
-  // Simulasi data sensor (dalam aplikasi nyata, ini akan didapat dari API/backend)
-  const sensorData = {
-    status: "EX", // Status bisa "EX" (Bahaya) atau lainnya (Aman)
-    activeSensors: 3,
-    lastUpdate: new Date().toLocaleString()
-  };
-
-  // Update tampilan berdasarkan data sensor
-  const statusElement = document.getElementById('status-umum');
-  
-  if (sensorData.status === "EX") {
-    statusElement.textContent = "BAHAYA";
-    statusElement.className = "badge bg-danger fs-6 px-3 py-1";
-  } else {
-    statusElement.textContent = "AMAN";
-    statusElement.className = "badge bg-success fs-6 px-3 py-1";
-  }
-
-  document.getElementById('jumlah-sensor').textContent = sensorData.activeSensors;
-  document.getElementById('waktu-update').textContent = sensorData.lastUpdate;
-}
-
-// Panggil fungsi pertama kali
-updateMonitoringStatus();
-
-// Update setiap 5 detik (simulasi real-time)
-setInterval(updateMonitoringStatus, 5000);
-</script>
-
-<script>
-setInterval(() => {
-  fetch("http://192.168.4.1/getAllData")  // ganti dengan IP ESP32 S3 kamu
-    .then(res => res.json())
-    .then(data => {
-      const value = data.vibration;
-      document.getElementById("piezo-value").innerText = value;
-      document.getElementById("piezo-progress").style.width = value + "%";
-
-      const status = document.getElementById("piezo-status");
-      if (value >= 80) {
-        status.innerText = "Bahaya";
-        status.style.color = "red";
-      } else if (value >= 50) {
-        status.innerText = "Waspada";
-        status.style.color = "orange";
-      } else {
-        status.innerText = "Normal";
-        status.style.color = "green";
-      }
-
-      document.getElementById("piezo-timestamp").innerText = new Date().toLocaleTimeString();
-    })
-    .catch(err => console.error("Gagal ambil data piezo:", err));
-}, 2000);
-</script>
-
-<script>
-setInterval(() => {
-  fetch("http://192.168.4.1/getAllData") // Ganti dengan IP ESP32 kamu
-    .then(res => res.json())
-    .then(data => {
-      // MPU6050
-      const mpu = data.mpu6050;
-      document.getElementById("mpu-value").innerText = mpu;
-      document.getElementById("mpu-progress").style.width = mpu + "%";
-
-      const mpuStatus = document.getElementById("mpu-status");
-      if (mpu >= 70) {
-        mpuStatus.innerText = "Bahaya";
-        mpuStatus.style.color = "red";
-      } else if (mpu >= 40) {
-        mpuStatus.innerText = "Waspada";
-        mpuStatus.style.color = "orange";
-      } else {
-        mpuStatus.innerText = "Normal";
-        mpuStatus.style.color = "green";
-      }
-      document.getElementById("mpu-timestamp").innerText = new Date().toLocaleTimeString();
-
-      // BME280
-      document.getElementById("bme-temp").innerText = data.temperature;
-      document.getElementById("bme-hum").innerText = data.humidity;
-      document.getElementById("bme-pres").innerText = data.pressure;
-      document.getElementById("bme-timestamp").innerText = new Date().toLocaleTimeString();
-    })
-    .catch(err => console.error("Gagal ambil data:", err));
-}, 2000);
-</script>
-
-<script>
-  function loadSensorHistory() {
-    fetch("http://10.62.58.237/getAllData") // Ganti IP dengan IP ESP32
-      .then(res => res.json())
-      .then(data => {
-        const tbody = document.getElementById("event-logs");
-        tbody.innerHTML = ""; // Kosongkan dulu
-
-        const logs = [
-          {
-            time: data.timestamp,
-            sensor: "Getaran Kasar (Piezo)",
-            value: data.vibration,
-            status: getStatus(data.vibration, 50, 80)
-          },
-          {
-            time: data.timestamp,
-            sensor: "Getaran Halus (MPU6050)",
-            value: data.mpu6050,
-            status: getStatus(data.mpu6050, 40, 70)
-          },
-          {
-            time: data.timestamp,
-            sensor: "Tekanan/Lingkungan (BME)",
-            value: data.bme680,
-            status: getStatus(data.bme680, 70, 90)
-          }
-        ];
-
-        logs.forEach(log => {
-          const row = document.createElement("tr");
-          row.innerHTML = `
-            <td>${log.time}</td>
-            <td>${log.sensor}</td>
-            <td>${log.value}</td>
-            <td>
-              <span class="badge ${getBadge(log.status)}">${log.status}</span>
-            </td>
-            <td>
-              <button class="btn btn-sm btn-outline-info">
-                <i class="fas fa-search"></i> Detail
-              </button>
-            </td>
-          `;
-          tbody.appendChild(row);
-        });
-      })
-      .catch(err => {
-        const tbody = document.getElementById("event-logs");
-        tbody.innerHTML = `
-          <tr><td colspan="5" class="text-danger text-center">Gagal memuat data.</td></tr>
-        `;
-        console.error("Gagal fetch data:", err);
-      });
-  }
-
-  function getStatus(value, warning, danger) {
-    if (value >= danger) return "Bahaya";
-    if (value >= warning) return "Waspada";
-    return "Normal";
-  }
-
-  function getBadge(status) {
-    if (status === "Bahaya") return "bg-danger";
-    if (status === "Waspada") return "bg-warning text-dark";
-    return "bg-success";
-  }
-
-  // Event listener tombol refresh
-  document.getElementById("refresh-logs").addEventListener("click", loadSensorHistory);
-
-  // Auto-load saat halaman dibuka
-  loadSensorHistory();
-</script>
-
+    <!-- JavaScript -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gauge-chart@1.2.2/dist/gauge.min.js"></script>
+    <script src="<?= ASSETS_PATH ?>/js/monitoring.js"></script>
 </body>
 </html>
