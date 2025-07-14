@@ -98,7 +98,7 @@
     <!-- Deskripsi -->
     <div class="mt-2 ps-2">
       <p class="mb-1 small text-muted"><strong>Threshold:</strong> Waspada ≥ 50, Bahaya ≥ 80</p>
-      <p class="small text-muted">Sensor Piezo mendeteksi getaran kasar mendadak di dasar laut atau pelampung, sebagai indikator awal pergeseran lempeng yang dapat menyebabkan tsunami.</p>
+      <p class="small text-muted">Sensor Piezo mendeteksi getaran kasar mendadak didasar laut atau pelampung, sebagai indikator awal pergeseran lempeng yang dapat menyebabkan tsunami.</p>
     </div>
   </div>
 
