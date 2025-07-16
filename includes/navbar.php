@@ -29,7 +29,7 @@ if (!function_exists('check_system_status')) {
                 <!-- Brand Logo with Gradient Text -->
                 <a class="navbar-brand" href="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>">
                     <i class="fas fa-water me-2"></i>
-                    <span class="brand-text">TsunamiAlert</span>
+                    <span class="brand-text">TsnamiAlert</span>
                 </a>
                 
                 <!-- Mobile Toggle Button -->
