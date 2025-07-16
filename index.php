@@ -9,9 +9,9 @@ include 'includes/navbar.php';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Early Tsunami Detection System for Pekon Teluk Kiluan Negri - Real-time monitoring and detection for tsunami warnings">
-    <meta name="keywords" content="tsunami, early warning system, earthquake detection, BMKG, coastal safety">
-    <title>Early Tsunami Detection System | RINOVA</title>
+    <meta name="description" content="Sistem Deteksi Dini Tsunami untuk Pekon Teluk Kiluan Negri - Pemantauan dan deteksi real-time untuk peringatan tsunami">
+    <meta name="keywords" content="tsunami, sistem peringatan dini, deteksi gempa, BMKG, keamanan pesisir">
+    <title>Sistem Deteksi Dini Tsunami | RINOVA</title>
     
     <!-- Favicon -->
     <link rel="icon" href="assets/img/favicon.ico" type="image/x-icon">
@@ -36,19 +36,19 @@ include 'includes/navbar.php';
                     DETECTION SYSTEM <br>
                     <span class="text-decorative">Pekon Teluk Kiluan Negri</span>
                 </h1>
-                <p class="hero-subtitle">Advanced real-time monitoring and detection system for early tsunami warnings...</p>
+                
                 <div class="d-flex gap-3">
                     <a href="monitoring.php" class="hero-button">
-                        <i class="fas fa-chart-line me-2"></i> View Monitoring
+                        <i class="fas fa-chart-line me-2"></i> Lihat Pemantauan
                     </a>
                     <a href="#features" class="hero-button" style="background: transparent; color: var(--color-white);">
-                        <i class="fas fa-info-circle me-2"></i> Learn More
+                        <i class="fas fa-info-circle me-2"></i> Pelajari Lebih Lanjut
                     </a>
                 </div>
             </div>
             <div class="col-lg-6">
                 <div class="hero-image-container">
-                    <img src="assets/img/desta.png" alt="Tsunami Warning System" class="hero-image img-fluid" style="background: transparent;">
+                    <img src="assets/img/desta.png" alt="Sistem Peringatan Tsunami" class="hero-image img-fluid" style="background: transparent;">
                 </div>
             </div>
         </div>
@@ -59,8 +59,8 @@ include 'includes/navbar.php';
 <section id="features" class="features-section">
     <div class="container">
         <div class="section-header">
-            <h2>SYSTEM FEATURES</h2>
-            <p>Utilizing IoT technology and real-time data monitoring, this system connects directly with official data sources from BMKG to provide accurate information for quick and efficient response to potential tsunami threats.</p>
+            <h2>FITUR SISTEM</h2>
+            <p>Menggunakan teknologi IoT dan pemantauan data real-time, sistem ini terhubung langsung dengan sumber data resmi dari BMKG untuk menyediakan informasi akurat guna respons cepat dan efisien terhadap ancaman tsunami potensial.</p>
         </div>
         <div class="row g-4">
             <div class="col-md-4">
@@ -68,8 +68,8 @@ include 'includes/navbar.php';
                     <div class="feature-icon">
                         <i class="fas fa-bell"></i>
                     </div>
-                    <h5>Real-time Alerts</h5>
-                    <p>Instant notifications when potential tsunami vibrations are detected, with multi-channel warning systems including SMS, sirens, and mobile app push notifications.</p>
+                    <h5>Peringatan Real-time</h5>
+                    <p>Notifikasi instan ketika getaran tsunami potensial terdeteksi, dengan sistem peringatan multi-saluran termasuk SMS, sirene, dan notifikasi push aplikasi mobile.</p>
                 </div>
             </div>
             <div class="col-md-4">
@@ -77,8 +77,8 @@ include 'includes/navbar.php';
                     <div class="feature-icon">
                         <i class="fas fa-chart-line"></i>
                     </div>
-                    <h5>Data Visualization</h5>
-                    <p>Interactive charts and maps showing vibration patterns, wave heights, and potential impact areas with real-time updates every 30 seconds.</p>
+                    <h5>Visualisasi Data</h5>
+                    <p>Grafik dan peta interaktif yang menunjukkan pola getaran, tinggi gelombang, dan area dampak potensial dengan pembaruan real-time setiap 30 detik.</p>
                 </div>
             </div>
             <div class="col-md-4">
@@ -86,8 +86,8 @@ include 'includes/navbar.php';
                     <div class="feature-icon">
                         <i class="fas fa-database"></i>
                     </div>
-                    <h5>Historical Data</h5>
-                    <p>Comprehensive archive of past event data for analysis, research, and system improvement with customizable reporting tools.</p>
+                    <h5>Data Historis</h5>
+                    <p>Arsip komprehensif data kejadian masa lalu untuk analisis, penelitian, dan peningkatan sistem dengan alat pelaporan yang dapat disesuaikan.</p>
                 </div>
             </div>
             <div class="col-md-4">
@@ -95,8 +95,8 @@ include 'includes/navbar.php';
                     <div class="feature-icon">
                         <i class="fas fa-satellite-dish"></i>
                     </div>
-                    <h5>Multi-Sensor Network</h5>
-                    <p>Deployment of multiple sensor types including seismic, pressure, and GPS sensors for comprehensive data collection.</p>
+                    <h5>Jaringan Multi-Sensor</h5>
+                    <p>Penyebaran berbagai jenis sensor termasuk sensor seismik, tekanan, dan GPS untuk pengumpulan data yang komprehensif.</p>
                 </div>
             </div>
             <div class="col-md-4">
@@ -104,8 +104,8 @@ include 'includes/navbar.php';
                     <div class="feature-icon">
                         <i class="fas fa-map-marked-alt"></i>
                     </div>
-                    <h5>Impact Prediction</h5>
-                    <p>Advanced algorithms predict potential impact zones and estimated wave arrival times based on current data.</p>
+                    <h5>Prediksi Dampak</h5>
+                    <p>Algoritma canggih memprediksi zona dampak potensial dan perkiraan waktu kedatangan gelombang berdasarkan data terkini.</p>
                 </div>
             </div>
             <div class="col-md-4">
@@ -113,8 +113,8 @@ include 'includes/navbar.php';
                     <div class="feature-icon">
                         <i class="fas fa-shield-alt"></i>
                     </div>
-                    <h5>Redundant Systems</h5>
-                    <p>Multiple backup systems ensure continuous operation even during power outages or communication failures.</p>
+                    <h5>Sistem Redundan</h5>
+                    <p>Beberapa sistem cadangan memastikan operasi terus menerus bahkan selama pemadaman listrik atau kegagalan komunikasi.</p>
                 </div>
             </div>
         </div>
@@ -125,8 +125,8 @@ include 'includes/navbar.php';
 <section class="gallery-section">
     <div class="container">
         <div class="section-header">
-            <h2>OUR SYSTEM DOCUMENTATION</h2>
-            <p class="lead">Each device we develop is not just technology, but a tangible manifestation of our commitment to protecting coastal communities. Explore our system components and installation process.</p>
+            <h2>DOKUMENTASI SISTEM KAMI</h2>
+            <p class="lead">Setiap perangkat yang kami kembangkan bukan hanya teknologi, tetapi perwujudan nyata dari komitmen kami untuk melindungi komunitas pesisir. Jelajahi komponen sistem dan proses instalasi kami.</p>
         </div>
         
         <div class="row justify-content-center g-4">
@@ -134,33 +134,33 @@ include 'includes/navbar.php';
             $galleryItems = [
                 [
                     'img' => 'assets/img/teluk1.png',
-                    'title' => 'Detection Buoy',
-                    'desc' => 'Advanced offshore buoy with pressure sensors and GPS positioning'
+                    'title' => 'Pelampung Deteksi',
+                    'desc' => 'Pelampung lepas pantai canggih dengan sensor tekanan dan posisi GPS'
                 ],
                 [
                     'img' => 'assets/img/teluk2.png',
-                    'title' => 'Seismic Sensor',
-                    'desc' => 'High-sensitivity ground vibration detection equipment'
+                    'title' => 'Sensor Seismik',
+                    'desc' => 'Peralatan deteksi getaran tanah dengan sensitivitas tinggi'
                 ],
                 [
                     'img' => 'assets/img/teluk3.png',
-                    'title' => 'Control Center',
-                    'desc' => 'Central monitoring station with data processing capabilities'
+                    'title' => 'Pusat Kendali',
+                    'desc' => 'Stasiun pemantauan pusat dengan kemampuan pemrosesan data'
                 ],
                 [
                     'img' => 'assets/img/teluk4.png',
-                    'title' => 'Warning Siren',
-                    'desc' => 'High-decibel alert system for community notification'
+                    'title' => 'Sirene Peringatan',
+                    'desc' => 'Sistem peringatan desibel tinggi untuk pemberitahuan masyarakat'
                 ],
                 [
                     'img' => 'assets/img/teluk1.png',
-                    'title' => 'Solar Power Unit',
-                    'desc' => 'Sustainable energy source for remote installations'
+                    'title' => 'Unit Tenaga Surya',
+                    'desc' => 'Sumber energi berkelanjutan untuk instalasi terpencil'
                 ],
                 [
                     'img' => 'assets/img/teluk2.png',
-                    'title' => 'Communication Hub',
-                    'desc' => 'Data transmission center with satellite backup'
+                    'title' => 'Hub Komunikasi',
+                    'desc' => 'Pusat transmisi data dengan cadangan satelit'
                 ]
             ];
             
@@ -174,7 +174,7 @@ include 'includes/navbar.php';
                         <div class="gallery-card-body">
                             <h5 class="gallery-card-title">'.$item['title'].'</h5>
                             <p class="gallery-card-desc">'.$item['desc'].'</p>
-                            <a href="'.$item['img'].'" class="btn btn-sm btn-outline-primary mt-2" data-fslightbox="gallery">View Larger</a>
+                            <a href="'.$item['img'].'" class="btn btn-sm btn-outline-primary mt-2" data-fslightbox="gallery">Lihat Lebih Besar</a>
                         </div>
                     </div>
                 </div>';
@@ -184,25 +184,32 @@ include 'includes/navbar.php';
     </div>
 </section>
 
+<div class="dolphin-container">
+    <!-- Contoh path absolut untuk testing -->
+    <img src="assets/img/cindy2.png" alt="Lumba-Lumba Kiri" class="floating-dolphin left">
+    <img src="assets/img/cindy3.png" alt="Lumba-Lumba Kanan" class="floating-dolphin right">
+</div>
+
+
 <!-- Stats Section -->
 <section class="stats-section bg-gradient-primary text-white py-5">
     <div class="container">
         <div class="row text-center">
             <div class="col-md-3 col-6 mb-4 mb-md-0">
                 <div class="display-4 fw-bold">24/7</div>
-                <p class="mb-0">Monitoring</p>
+                <p class="mb-0">Pemantauan</p>
             </div>
             <div class="col-md-3 col-6 mb-4 mb-md-0">
                 <div class="display-4 fw-bold">5</div>
-                <p class="mb-0">Detection Points</p>
+                <p class="mb-0">Titik Deteksi</p>
             </div>
             <div class="col-md-3 col-6">
                 <div class="display-4 fw-bold">3.5</div>
-                <p class="mb-0">Minute Response</p>
+                <p class="mb-0">Respon Menit</p>
             </div>
             <div class="col-md-3 col-6">
                 <div class="display-4 fw-bold">99.9%</div>
-                <p class="mb-0">Uptime</p>
+                <p class="mb-0">Waktu Aktif</p>
             </div>
         </div>
     </div>

@@ -13,11 +13,11 @@ if (!file_exists('includes/navbar.php')) {
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>About Us | Tsunami Warning</title>
+  <title>Tentang Kami | Sistem Peringatan Tsunami</title>
 
   <!-- Favicon -->
   <link rel="icon" href="<?= BASE_URL ?>images/wave-icon.png" type="image/png">
@@ -35,7 +35,7 @@ if (!file_exists('includes/navbar.php')) {
   <!-- Navbar CSS -->
   <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/navbar.css" />
 </head>
-<body> class="about-page">
+<body class="about-page">
 
   <!-- Navbar -->
   <?php include 'includes/navbar.php'; ?>
@@ -45,17 +45,16 @@ if (!file_exists('includes/navbar.php')) {
     <div class="container">
       <div class="row align-items-center">
         <div class="col-lg-6">
-          <h1 class="display-3 fw-bold mb-4 animate__animated animate__fadeInDown">About Our <span class="text-primary">Project</span></h1>
+          <h1 class="display-3 fw-normal mb-4 animate__animated animate__fadeInDown">Tentang Proyek Kami</span></h1>
           <p class="lead mb-4 animate__animated animate__fadeIn animate__delay-1s">
-            Revolutionizing coastal safety with cutting-edge IoT technology for real-time tsunami detection and early warning.
+            Merevolusi keselamatan pesisir dengan teknologi IoT mutakhir untuk deteksi tsunami dan peringatan dini secara real-time.
           </p>
           <div class="d-flex gap-3 animate__animated animate__fadeIn animate__delay-2s">
-            <a href="#mission" class="btn btn-primary btn-lg px-4">Our Mission</a>
-            <a href="#team" class="btn btn-outline-dark btn-lg px-4">Meet the Team</a>
+            <a href="#mission" class="btn btn-primary btn-lg px-4">Misi Kami</a>
+            <a href="#team" class="btn btn-outline-dark btn-lg px-4">Tim Kami</a>
           </div>
         </div>
         <div class="col-lg-6 animate__animated animate__fadeInRight">
-          <img src="<?= BASE_URL ?>images/tsunami-illustration.png" alt="Tsunami Early Warning System" class="img-fluid">
         </div>
       </div>
     </div>
@@ -65,7 +64,7 @@ if (!file_exists('includes/navbar.php')) {
   <section id="mission" class="mission-section py-5">
     <div class="container">
       <div class="section-header text-center mb-5">
-        <h2 class="display-5 fw-bold">Our <span class="text-primary">Mission</span></h2>
+        <h2 class="display-5 fw-normal">Misi Kami</span></h2>
         <div class="divider mx-auto"></div>
       </div>
       
@@ -75,14 +74,14 @@ if (!file_exists('includes/navbar.php')) {
             <div class="icon-box mb-4">
               <i class="fas fa-bullseye"></i>
             </div>
-            <h3 class="mb-3">Protecting Coastal Communities</h3>
+            <h3 class="mb-3">Melindungi Masyarakat Pesisir</h3>
             <p class="mb-4">
-              We're committed to developing a low-cost, highly reliable tsunami detection system that provides accurate early warnings to vulnerable coastal areas.
+              Kami berkomitmen untuk mengembangkan sistem deteksi tsunami yang terjangkau dan sangat andal yang memberikan peringatan dini akurat ke daerah pesisir yang rentan.
             </p>
             <ul class="mission-list">
-              <li><i class="fas fa-check-circle"></i> Real-time monitoring</li>
-              <li><i class="fas fa-check-circle"></i> 24/7 threat detection</li>
-              <li><i class="fas fa-check-circle"></i> Instant alert system</li>
+              <li><i class="fas fa-check-circle"></i> Pemantauan real-time</li>
+              <li><i class="fas fa-check-circle"></i> Deteksi ancaman 24/7</li>
+              <li><i class="fas fa-check-circle"></i> Sistem peringatan instan</li>
             </ul>
           </div>
         </div>
@@ -91,29 +90,29 @@ if (!file_exists('includes/navbar.php')) {
             <div class="col-md-6">
               <div class="feature-card p-4 h-100 rounded-4">
                 <i class="fas fa-clock feature-icon mb-3"></i>
-                <h4>Early Detection</h4>
-                <p>Detects potential threats minutes before traditional systems</p>
+                <h4>Deteksi Dini</h4>
+                <p>Mendeteksi ancaman potensial beberapa menit sebelum sistem tradisional</p>
               </div>
             </div>
             <div class="col-md-6">
               <div class="feature-card p-4 h-100 rounded-4">
                 <i class="fas fa-bolt feature-icon mb-3"></i>
-                <h4>Rapid Alerts</h4>
-                <p>Instant notifications to authorities and communities</p>
+                <h4>Peringatan Cepat</h4>
+                <p>Notifikasi instan ke pihak berwenang dan masyarakat</p>
               </div>
             </div>
             <div class="col-md-6">
               <div class="feature-card p-4 h-100 rounded-4">
                 <i class="fas fa-money-bill-wave feature-icon mb-3"></i>
-                <h4>Cost Effective</h4>
-                <p>Affordable solution for developing regions</p>
+                <h4>Harga Terjangkau</h4>
+                <p>Solusi ekonomis untuk daerah berkembang</p>
               </div>
             </div>
             <div class="col-md-6">
               <div class="feature-card p-4 h-100 rounded-4">
                 <i class="fas fa-shield-alt feature-icon mb-3"></i>
-                <h4>Reliable</h4>
-                <p>99.9% system uptime guarantee</p>
+                <h4>Andal</h4>
+                <p>Jaminan waktu aktif sistem 99.9%</p>
               </div>
             </div>
           </div>
@@ -126,10 +125,10 @@ if (!file_exists('includes/navbar.php')) {
 <section id="team" class="team-section py-5 bg-light">
   <div class="container">
     <div class="section-header text-center mb-5">
-      <h2 class="display-5 fw-bold">Meet Our <span class="text-primary">Team</span></h2>
+      <h2 class="display-5 fw-normal">Tim Kami</span></h2>
       <div class="divider mx-auto"></div>
       <p class="lead mx-auto" style="max-width: 700px;">
-        Dedicated organizations working together to make coastal communities safer
+        Organisasi berdedikasi yang bekerja sama untuk membuat komunitas pesisir lebih aman
       </p>
     </div>
     
@@ -141,8 +140,8 @@ if (!file_exists('includes/navbar.php')) {
             <img src="<?= BASE_URL ?>images/team/bem-unila.jpg" alt="BEM U KBM UNILA" class="rounded-circle">
           </div>
           <h3>BEM U KBM UNILA</h3>
-          <p class="text-primary mb-2">Supporting Organization</p>
-          <p class="mb-3">Providing essential support and resources for implementation</p>
+          <p class="text-primary mb-2">Organisasi Pendukung</p>
+          <p class="mb-3">Menyediakan dukungan dan sumber daya penting untuk implementasi</p>
           <div class="social-links">
             <a href="#"><i class="fab fa-instagram"></i></a>
             <a href="#"><i class="fas fa-globe"></i></a>
@@ -156,9 +155,9 @@ if (!file_exists('includes/navbar.php')) {
           <div class="team-img mx-auto mb-4">
             <img src="<?= BASE_URL ?>images/team/rinova.jpg" alt="Team Rinova" class="rounded-circle">
           </div>
-          <h3>Team Rinova</h3>
-          <p class="text-primary mb-2">Technical Development Team</p>
-          <p class="mb-3">Providing essential support and resources for implementation</p>
+          <h3>Tim Rinova</h3>
+          <p class="text-primary mb-2">Tim Pengembangan Teknis</p>
+          <p class="mb-3">Menyediakan dukungan dan sumber daya penting untuk implementasi</p>
           <div class="social-links">
               <a href="#"><i class="fab fa-instagram"></i></a>
               <a href="#"><i class="fas fa-globe"></i></a>
@@ -173,10 +172,10 @@ if (!file_exists('includes/navbar.php')) {
   <section class="tech-section py-5">
     <div class="container">
       <div class="section-header text-center mb-5">
-        <h2 class="display-5 fw-bold">Our <span class="text-primary">Technology</span></h2>
+        <h2 class="display-5 fw-normal">Teknologi Kami</span></h2>
         <div class="divider mx-auto"></div>
         <p class="lead mx-auto" style="max-width: 700px;">
-          Cutting-edge technologies powering our early warning system
+          Teknologi mutakhir yang mendukung sistem peringatan dini kami
         </p>
       </div>
       
@@ -188,12 +187,12 @@ if (!file_exists('includes/navbar.php')) {
               <i class="fas fa-microchip"></i>
             </div>
             <h3 class="mb-3">ESP32</h3>
-            <p class="mb-3">Low-power microcontroller with Wi-Fi/Bluetooth capabilities</p>
+            <p class="mb-3">Mikrokontroler hemat daya dengan kemampuan Wi-Fi/Bluetooth</p>
             <div class="tech-progress">
               <div class="progress">
                 <div class="progress-bar" role="progressbar" style="width: 95%"></div>
               </div>
-              <span>95% Reliability</span>
+              <span>95% Keandalan</span>
             </div>
           </div>
         </div>
@@ -205,12 +204,12 @@ if (!file_exists('includes/navbar.php')) {
               <i class="fas fa-server"></i>
             </div>
             <h3 class="mb-3">PHP/MySQL</h3>
-            <p class="mb-3">Robust backend for data processing and storage</p>
+            <p class="mb-3">Backend kuat untuk pemrosesan dan penyimpanan data</p>
             <div class="tech-progress">
               <div class="progress">
                 <div class="progress-bar" role="progressbar" style="width: 90%"></div>
               </div>
-              <span>90% Efficiency</span>
+              <span>90% Efisiensi</span>
             </div>
           </div>
         </div>
@@ -222,12 +221,12 @@ if (!file_exists('includes/navbar.php')) {
               <i class="fas fa-chart-line"></i>
             </div>
             <h3 class="mb-3">Dashboard</h3>
-            <p class="mb-3">Real-time monitoring and alert visualization</p>
+            <p class="mb-3">Pemantauan real-time dan visualisasi peringatan</p>
             <div class="tech-progress">
               <div class="progress">
                 <div class="progress-bar" role="progressbar" style="width: 92%"></div>
               </div>
-              <span>92% Accuracy</span>
+              <span>92% Akurasi</span>
             </div>
           </div>
         </div>
@@ -238,13 +237,13 @@ if (!file_exists('includes/navbar.php')) {
             <div class="tech-icon mb-4">
               <i class="fas fa-satellite-dish"></i>
             </div>
-            <h3 class="mb-3">IoT Sensors</h3>
-            <p class="mb-3">Advanced water pressure and seismic sensors</p>
+            <h3 class="mb-3">Sensor IoT</h3>
+            <p class="mb-3">Sensor tekanan air dan seismik canggih</p>
             <div class="tech-progress">
               <div class="progress">
                 <div class="progress-bar" role="progressbar" style="width: 97%"></div>
               </div>
-              <span>97% Precision</span>
+              <span>97% Presisi</span>
             </div>
           </div>
         </div>
@@ -255,13 +254,13 @@ if (!file_exists('includes/navbar.php')) {
   <!-- Call to Action -->
   <section class="cta-section py-5 bg-primary text-white">
     <div class="container text-center">
-      <h2 class="display-5 fw-bold mb-4">Ready to Implement Our System?</h2>
+      <h2 class="display-5 fw-bold mb-4">Siap Menerapkan Sistem Kami?</h2>
       <p class="lead mb-5 mx-auto" style="max-width: 700px;">
-        Contact us today to bring tsunami early warning protection to your coastal community
+        Hubungi kami hari ini untuk membawa perlindungan peringatan dini tsunami ke komunitas pesisir Anda
       </p>
       <div class="d-flex justify-content-center gap-3">
-        <a href="#" class="btn btn-light btn-lg px-4">Request Demo</a>
-        <a href="#" class="btn btn-outline-light btn-lg px-4">Contact Us</a>
+        <a href="#" class="btn btn-light btn-lg px-4">Minta Demo</a>
+        <a href="#footer-heading" class="btn btn-outline-light btn-lg px-4">Hubungi Kami</a>
       </div>
     </div>
   </section>

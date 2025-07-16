@@ -71,6 +71,38 @@ body {
     overflow-x: hidden;
 }
 
+.dolphin-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* agar tidak mengganggu interaksi dengan elemen lain */
+}
+
+.floating-dolphin {
+    position: absolute; /* menggunakan fixed bukan absolute */
+    height: 260px; /* sesuaikan ukuran sesuai kebutuhan */
+    width: auto;
+    animation: float 3s ease-in-out infinite;
+    bottom: -1300px; /* posisi dari bawah */
+}
+
+.floating-dolphin.left {
+    left: 20px; /* jarak dari kiri */
+}
+
+.floating-dolphin.right {
+    right: 20px; /* jarak dari kanan */
+}
+
+/* Animasi mengambang */
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+    100% { transform: translateY(0px); }
+}
+
 h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
     font-weight: 700;
@@ -153,21 +185,27 @@ section {
 
 /* Hero Section */
 .hero-section {
-    padding: 8rem 0 6rem;
-    color: var(--color-white);
-    position: relative;
-    overflow: hidden;
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+  background: url('../img/bg-tsunami.png') no-repeat center center;
+  background-size: cover;
+  background-attachment: fixed;
+  padding: 100px 0;
+  color: white;
+  position: relative;
 }
 
 .hero-section::before {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 100px;
-    z-index: 1;
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.3); /* gelapkan gambar */
+  z-index: 1;
+}
+
+.hero-section .container {
+  position: relative;
+  z-index: 2;
 }
 
 .hero-content {

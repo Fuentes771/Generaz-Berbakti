@@ -6,6 +6,11 @@
  */
 ?>
 
+<?php
+// At the top of your footer.php or before the footer is included
+$appVersion = defined('APP_VERSION') ? APP_VERSION : '1.0.0';
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -83,7 +88,7 @@
                         <p class="copyright-text">&copy; <?= date('Y') ?> Tsunami Warning System. All rights reserved.</p>
                     </div>
                     <div class="col-md-6 text-center text-md-end">
-                        <p class="version-text">Version <?= htmlspecialchars(APP_VERSION, ENT_QUOTES, 'UTF-8') ?></p>
+                        <p class="version-text">Version: <?= $appVersion ?></div>
                     </div>
                 </div>
             </div>
