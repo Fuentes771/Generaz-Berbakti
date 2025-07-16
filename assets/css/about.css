@@ -5,7 +5,6 @@
  */
 
 :root {
-    --about-primary: #00ffff;
     --about-bg-overlay: rgba(0, 0, 50, 0.5);
     --card-bg: rgba(255, 255, 255, 0.15);
     --tech-item-bg: rgba(0, 0, 0, 0.2);
