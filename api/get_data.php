@@ -4,9 +4,9 @@ header("Access-Control-Allow-Origin: *");
 
 // Database configuration
 $servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "sensor_db";
+$username = "u855675680_mntrrinovajaya";
+$password = "Generazberbaktijaya123!";
+$dbname = "u855675680_mntrpekon";
 
 // Get parameters
 $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 20;
