@@ -19,15 +19,25 @@ define('API_KEY', 'TSUNAMI_' . bin2hex(random_bytes(16)));
 
 // Database Configuration - Use environment variables if available
 define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
-define('DB_USER', getenv('DB_USER') ?: 'root');
-define('DB_PASS', getenv('DB_PASS') ?: '');
-define('DB_NAME', getenv('DB_NAME') ?: 'tsunami_warning');
+define('DB_USER', getenv('DB_USER') ?: 'u855675680_mntrrinovajaya');
+define('DB_PASS', getenv('DB_PASS') ?: 'generazberbaktijaya123!');
+define('DB_NAME', getenv('DB_NAME') ?: 'u855675680_pekonkiluan');
 define('DB_CHARSET', 'utf8mb4');
 
 // IoT Device Configuration
-define('ESP_IP', '192.168.241.203');
+define('ESP_IP', '10.63.234.35');
 define('ESP_UPDATE_INTERVAL', 60); // Update interval in seconds
 define('MAX_SENSOR_VALUE', 100);
+
+// LoRa
+// IP address of the LoRa receiver
+define('RECEIVER_IP', '10.63.234.35'); // Ganti dengan IP penerima Anda
+
+// Threshold values for sensors
+define('VIBRATION_WARNING', 300);
+define('VIBRATION_DANGER', 500);
+define('ACCELERATION_WARNING', 1.0);
+define('ACCELERATION_DANGER', 1.5);
 
 // Path Constants
 $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';

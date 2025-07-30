@@ -7,24 +7,24 @@
 class MonitoringDashboard {
     constructor() {
         this.config = {
-            espIp: "192.168.248.237",
+            receiverIp: "<?= RECEIVER_IP ?>",
             apiBaseUrl: "<?= API_PATH ?>",
             maxHistory: 30,
             refreshInterval: 2000,
             vibrationThresholds: {
-                normal: 4,
-                warning: 7,
-                danger: 10
+                normal: "<?= VIBRATION_WARNING ?>",
+                warning: "<?= VIBRATION_WARNING ?>",
+                danger: "<?= VIBRATION_DANGER ?>"
             },
             mpuThresholds: {
-                normal: 40,
-                warning: 70,
-                danger: 100
+                normal: "<?= ACCELERATION_WARNING ?>",
+                warning: "<?= ACCELERATION_WARNING ?>",
+                danger: "<?= ACCELERATION_DANGER ?>"
             },
             piezoThresholds: {
-                normal: 50,
-                warning: 80,
-                danger: 100
+                normal: "<?= VIBRATION_WARNING ?>",
+                warning: "<?= VIBRATION_WARNING ?>",
+                danger: "<?= VIBRATION_DANGER ?>"
             }
         };
 
