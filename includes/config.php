@@ -20,8 +20,8 @@ define('API_KEY', 'TSUNAMI_' . bin2hex(random_bytes(16)));
 // Database Configuration - Use environment variables if available
 define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
 define('DB_USER', getenv('DB_USER') ?: 'u855675680_mntrrinovajaya');
-define('DB_PASS', getenv('DB_PASS') ?: 'generazberbaktijaya123!');
-define('DB_NAME', getenv('DB_NAME') ?: 'u855675680_pekonkiluan');
+define('DB_PASS', getenv('DB_PASS') ?: 'Generazberbaktijaya123!');
+define('DB_NAME', getenv('DB_NAME') ?: 'u855675680_mntrpekon');
 define('DB_CHARSET', 'utf8mb4');
 
 // IoT Device Configuration
