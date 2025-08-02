@@ -40,9 +40,9 @@ try {
         );
         
         $status = 'Normal';
-        if ($vibration >= 500 || $mpu6050 >= 1.5) {
+        if ($vibration >= 5000 || $mpu6050 >= 1500) {
             $status = 'Danger';
-        } elseif ($vibration >= 300 || $mpu6050 >= 1.0) {
+        } elseif ($vibration >= 3000 || $mpu6050 >= 1000) {
             $status = 'Warning';
         }
         

@@ -1,109 +1,141 @@
 <?php
 require_once 'includes/config.php';
 
-// Konfigurasi untuk Arduino/LoRa Receiver
-define('RECEIVER_API_KEY', 'arduino123');
-
-// Database connection with error handling
-try {
-    $conn = new PDO(
-        "mysql:host=".DB_HOST.";dbname=".DB_NAME.";charset=".DB_CHARSET,
-        DB_USER,
-        DB_PASS,
-        [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::ATTR_EMULATE_PREPARES => false
-        ]
-    );
-} catch (PDOException $e) {
-    error_log("Database connection error: " . $e->getMessage());
-    die("System temporarily unavailable. Please try again later.");
-}
-
-// Function to get node data with caching
-function getNodeData($conn, $nodeId) {
-    static $cache = [];
+// Ambil semua data node dari database
+function getAllNodeData() {
+    $conn = getDatabaseConnection();
+    $nodesData = [];
     
-    if (!isset($cache[$nodeId])) {
-        try {
-            $stmt = $conn->prepare("
-                SELECT * FROM sensor_data 
-                WHERE node_id = :node_id
-                ORDER BY timestamp DESC 
-                LIMIT 1
-            ");
-            $stmt->execute(['node_id' => $nodeId]);
-            $nodeData = $stmt->fetch() ?: [];
+    try {
+        // Ambil data terbaru dari setiap node
+        $stmt = $conn->prepare("
+            SELECT sd.* FROM sensor_data sd
+            INNER JOIN (
+                SELECT node_id, MAX(timestamp) as latest_timestamp 
+                FROM sensor_data 
+                GROUP BY node_id
+            ) latest ON sd.node_id = latest.node_id AND sd.timestamp = latest.latest_timestamp
+            ORDER BY sd.node_id
+        ");
+        $stmt->execute();
+        
+        $rawData = $stmt->fetchAll();
+        
+        // Proses data untuk setiap node
+        foreach ($rawData as $row) {
+            $nodeId = $row['node_id'];
+            $vibrationLevel = $row['vibration'] ?? 0;
+            $mpuLevel = $row['mpu6050'] ?? 0;
             
-            if ($nodeData) {
-                $vibrationLevel = $nodeData['vibration'] ?? 0;
-                $mpuLevel = $nodeData['mpu6050'] ?? 0;
-                
-                $status = 'NORMAL';
-                $statusClass = 'status-normal';
-                if ($vibrationLevel > VIBRATION_DANGER || $mpuLevel > ACCELERATION_DANGER) {
-                    $status = 'DANGER';
-                    $statusClass = 'status-danger';
-                } elseif ($vibrationLevel > VIBRATION_WARNING || $mpuLevel > ACCELERATION_WARNING) {
-                    $status = 'WARNING';
-                    $statusClass = 'status-warning';
-                }
-                
-                $cache[$nodeId] = [
-                    'node_id' => $nodeId,
-                    'timestamp' => $nodeData['timestamp'],
-                    'temperature' => $nodeData['temperature'] ?? '--',
-                    'humidity' => $nodeData['humidity'] ?? '--',
-                    'pressure' => $nodeData['pressure'] ?? '--',
-                    'vibration' => $vibrationLevel,
-                    'mpu6050' => round($mpuLevel, 2),
-                    'latitude' => $nodeData['latitude'] ?? 0,
-                    'longitude' => $nodeData['longitude'] ?? 0,
-                    'status' => $status,
-                    'status_class' => $statusClass,
-                    'battery' => $nodeData['battery'] ?? '--'
-                ];
-            } else {
-                $cache[$nodeId] = [];
+            // Tentukan status node
+            $status = 'NORMAL';
+            $statusClass = 'status-normal';
+            if ($vibrationLevel > VIBRATION_DANGER || $mpuLevel > ACCELERATION_DANGER) {
+                $status = 'BAHAYA';
+                $statusClass = 'status-danger';
+            } elseif ($vibrationLevel > VIBRATION_WARNING || $mpuLevel > ACCELERATION_WARNING) {
+                $status = 'PERINGATAN';
+                $statusClass = 'status-warning';
             }
-        } catch (PDOException $e) {
-            error_log("Error fetching data for node $nodeId: " . $e->getMessage());
-            $cache[$nodeId] = [];
+            
+            $nodesData[$nodeId] = [
+                'node_id' => $nodeId,
+                'timestamp' => $row['timestamp'],
+                'temperature' => $row['temperature'] ?? '--',
+                'humidity' => $row['humidity'] ?? '--',
+                'pressure' => $row['pressure'] ?? '--',
+                'vibration' => $vibrationLevel,
+                'mpu6050' => round($mpuLevel, 2),
+                'latitude' => $row['latitude'] ?? 0,
+                'longitude' => $row['longitude'] ?? 0,
+                'status' => $status,
+                'status_class' => $statusClass,
+                'battery' => $row['battery'] ?? '--'
+            ];
+        }
+        
+        // Pastikan ada data untuk semua node (1-4)
+        for ($i = 1; $i <= 4; $i++) {
+            if (!isset($nodesData[$i])) {
+                $nodesData[$i] = [
+                    'node_id' => $i,
+                    'timestamp' => null,
+                    'temperature' => '--',
+                    'humidity' => '--',
+                    'pressure' => '--',
+                    'vibration' => 0,
+                    'mpu6050' => 0,
+                    'latitude' => 0,
+                    'longitude' => 0,
+                    'status' => 'NORMAL',
+                    'status_class' => 'status-normal',
+                    'battery' => '--'
+                ];
+            }
+        }
+        
+    } catch (PDOException $e) {
+        error_log("Error fetching node data: " . $e->getMessage());
+        // Return data kosong jika terjadi error
+        for ($i = 1; $i <= 4; $i++) {
+            $nodesData[$i] = [
+                'node_id' => $i,
+                'timestamp' => null,
+                'temperature' => '--',
+                'humidity' => '--',
+                'pressure' => '--',
+                'vibration' => 0,
+                'mpu6050' => 0,
+                'latitude' => 0,
+                'longitude' => 0,
+                'status' => 'NORMAL',
+                'status_class' => 'status-normal',
+                'battery' => '--'
+            ];
         }
     }
     
-    return $cache[$nodeId];
+    return $nodesData;
 }
 
-// Get all nodes data
-$nodesData = [];
-for ($i = 1; $i <= 4; $i++) {
-    $nodesData[$i] = getNodeData($conn, $i);
-}
+// Ambil data semua node
+$nodesData = getAllNodeData();
 
-// Check for any critical alerts
+// Cek apakah ada alert bahaya
 $criticalAlert = false;
 foreach ($nodesData as $node) {
-    if (isset($node['status']) && $node['status'] === 'DANGER') {
+    if ($node['status'] === 'BAHAYA') {
         $criticalAlert = true;
         break;
     }
 }
 
-$pageTitle = "Tsunami Early Warning System Dashboard";
+// Siapkan data lokasi untuk peta
+$nodeLocations = [];
+for ($i = 1; $i <= 4; $i++) {
+    $nodeData = $nodesData[$i] ?? [];
+    $nodeLocations[$i] = [
+        'latitude' => $nodeData['latitude'] ?? 0,
+        'longitude' => $nodeData['longitude'] ?? 0,
+        'status' => $nodeData['status'] ?? 'NORMAL',
+        'status_class' => $nodeData['status_class'] ?? 'status-normal',
+        'timestamp' => !empty($nodeData['timestamp']) ? date('H:i:s', strtotime($nodeData['timestamp'])) : 'N/A'
+    ];
+}
+
+$pageTitle = "Sistem Peringatan Dini Tsunami";
 $activePage = "monitoring";
 
 include 'includes/navbar.php';
 ?>
 
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="<?= $criticalAlert ? 'dark' : 'light' ?>">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-    <meta name="description" content="Real-time Tsunami Monitoring System Dashboard">
-    <meta name="author" content="Tsunami Warning Center">
+    <meta name="description" content="Sistem Monitoring Tsunami Real-time">
+    <meta name="author" content="Pusat Peringatan Tsunami">
     <title><?= htmlspecialchars($pageTitle) ?></title>
     
     <!-- Favicon -->
@@ -113,12 +145,11 @@ include 'includes/navbar.php';
     <link rel="manifest" href="<?= ASSETS_PATH ?>/favicon/site.webmanifest">
     
     <!-- CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Poppins:wght@300;400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.css">
-    <link href="<?= ASSETS_PATH ?>/css/monitoring.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/monitoring.css">
     
     <style>
         :root {
@@ -157,12 +188,6 @@ include 'includes/navbar.php';
             text-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         
-        body[data-bs-theme="dark"] .dashboard-title {
-            background: linear-gradient(90deg, #4e73df, #8ab4ff);
-            -webkit-background-clip: text;
-            background-clip: text;
-        }
-        
         .dashboard-subtitle {
             font-family: 'Rajdhani', sans-serif;
             font-weight: 600;
@@ -170,17 +195,11 @@ include 'includes/navbar.php';
             color: #6c757d;
         }
         
-        body[data-bs-theme="dark"] .dashboard-subtitle {
-            color: #adb5bd;
-        }
-        
         .node-card {
             border-radius: 10px;
             border: none;
             box-shadow: var(--card-shadow);
             transition: all 0.3s ease;
-            overflow: hidden;
-            position: relative;
         }
         
         .node-card:hover {
@@ -197,6 +216,7 @@ include 'includes/navbar.php';
             width: 12px;
             height: 12px;
             display: inline-block;
+            border-radius: 50%;
         }
         
         .node-badge.node1 { background-color: var(--node1-color); }
@@ -207,10 +227,8 @@ include 'includes/navbar.php';
         .status-badge {
             font-size: 0.75rem;
             font-weight: 600;
-            letter-spacing: 0.5px;
             padding: 0.35rem 0.65rem;
             border-radius: 50px;
-            text-transform: uppercase;
         }
         
         .status-normal {
@@ -244,8 +262,11 @@ include 'includes/navbar.php';
             padding: 15px;
         }
         
-        body[data-bs-theme="dark"] .chart-container {
-            background-color: #2c3034;
+        .map-container {
+            height: 600px;
+            width: 100%;
+            border-radius: 8px;
+            overflow: hidden;
         }
         
         .sensor-value {
@@ -284,193 +305,53 @@ include 'includes/navbar.php';
             to { transform: translateY(0); }
         }
         
-        .map-container {
-            border-radius: 8px;
-            overflow: hidden;
-            height: 400px;
-            box-shadow: var(--card-shadow);
-        }
-        
-        .system-health-card {
-            border-left: 4px solid #4e73df;
-        }
-        
-        .event-log {
-            max-height: 200px;
-            overflow-y: auto;
-            scrollbar-width: thin;
-        }
-        
-        .event-log::-webkit-scrollbar {
-            width: 6px;
-        }
-        
-        .event-log::-webkit-scrollbar-thumb {
-            background-color: rgba(0,0,0,0.2);
-            border-radius: 3px;
-        }
-        
-        body[data-bs-theme="dark"] .event-log::-webkit-scrollbar-thumb {
-            background-color: rgba(255,255,255,0.2);
-        }
-        
-        .node-connection {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 5px;
-        }
-        
-        .connection-active {
-            background-color: #1cc88a;
-            box-shadow: 0 0 10px #1cc88a;
-        }
-        
-        .connection-inactive {
-            background-color: #e74a3b;
-        }
-        
-        .battery-indicator {
-            position: relative;
-            width: 20px;
-            height: 10px;
-            border: 1px solid #6c757d;
-            border-radius: 2px;
-            display: inline-block;
-            vertical-align: middle;
-            margin-left: 5px;
-        }
-        
-        .battery-level {
-            position: absolute;
-            top: 1px;
-            left: 1px;
-            bottom: 1px;
-            border-radius: 1px;
-        }
-        
-        .battery-level-high {
-            background-color: #1cc88a;
-            width: 80%;
-        }
-        
-        .battery-level-medium {
-            background-color: #f6c23e;
-            width: 50%;
-        }
-        
-        .battery-level-low {
-            background-color: #e74a3b;
-            width: 20%;
-        }
-        
-        .battery-tip {
-            position: absolute;
-            right: -3px;
-            top: 3px;
-            width: 2px;
-            height: 4px;
-            background-color: #6c757d;
-            border-radius: 0 1px 1px 0;
-        }
-        
-        .gauge-container {
-            position: relative;
-            width: 100%;
-            height: 120px;
-            margin: 0 auto;
-        }
-        
-        .gauge {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
-        
-        .sensor-card {
-            transition: all 0.3s ease;
-            border-radius: 8px;
-        }
-        
-        .sensor-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-        }
-        
-        .node-filter-btn.active {
-            box-shadow: 0 0 0 2px rgba(0,0,0,0.1);
-        }
-        
-        .sensor-selector .form-check-input:checked + .form-check-label {
-            font-weight: 600;
-        }
-        
-        .notification-badge {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            font-size: 0.6rem;
-            width: 18px;
-            height: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
         .tsunami-alert-panel {
             background: linear-gradient(135deg, #e74a3b, #f6c23e);
             color: white;
             border-radius: 8px;
             padding: 15px;
             margin-bottom: 20px;
-            display: none;
-        }
-        
-        .tsunami-alert-panel h4 {
-            font-weight: 700;
-            margin-bottom: 10px;
-        }
-        
-        .tsunami-alert-panel p {
-            margin-bottom: 5px;
-        }
-        
-        .tsunami-alert-panel .alert-time {
-            font-size: 0.9rem;
-            opacity: 0.9;
-        }
-        
-        .node-header {
-            position: relative;
-        }
-        
-        .node-status-icon {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            font-size: 1.5rem;
-        }
-        
-        .status-normal .node-status-icon {
-            color: var(--normal-color);
-        }
-        
-        .status-warning .node-status-icon {
-            color: var(--warning-color);
-        }
-        
-        .status-danger .node-status-icon {
-            color: var(--danger-color);
-            animation: pulse 2s infinite;
         }
         
         .data-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 20px;
+        }
+        
+        .map-control-panel {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .map-legend {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            z-index: 1000;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 8px;
         }
         
         @media (max-width: 768px) {
@@ -481,85 +362,88 @@ include 'includes/navbar.php';
             .dashboard-title {
                 font-size: 1.8rem;
             }
+            
+            .map-container {
+                height: 400px;
+            }
         }
     </style>
 </head>
-<body class="monitoring-body">
-    <!-- Tsunami Alert Panel (shown only when danger detected) -->
+<body class="monitoring-body" data-bs-theme="<?= $criticalAlert ? 'dark' : 'light' ?>">
+    <!-- Panel Peringatan Tsunami -->
     <div id="tsunami-alert-panel" class="tsunami-alert-panel" style="<?= $criticalAlert ? 'display: block;' : 'display: none;' ?>">
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-md-8">
-                    <h4><i class="fas fa-exclamation-triangle me-2"></i> TSUNAMI WARNING</h4>
-                    <p class="mb-1">Potential tsunami detected by coastal monitoring sensors</p>
+                    <h4><i class="fas fa-exclamation-triangle me-2"></i> PERINGATAN TSUNAMI</h4>
+                    <p class="mb-1">Sensor pantai mendeteksi potensi tsunami</p>
                     <p class="alert-time mb-0"><i class="fas fa-clock me-1"></i> <?= date('Y-m-d H:i:s') ?></p>
                 </div>
                 <div class="col-md-4 text-md-end mt-3 mt-md-0">
                     <button id="alert-details-btn" class="btn btn-light me-2">
-                        <i class="fas fa-info-circle me-1"></i> Details
+                        <i class="fas fa-info-circle me-1"></i> Detail
                     </button>
                     <button id="alert-siren-btn" class="btn btn-danger">
-                        <i class="fas fa-bullhorn me-1"></i> Emergency Siren
+                        <i class="fas fa-bullhorn me-1"></i> Sirene Darurat
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Alert Banner -->
+    <!-- Banner Alert -->
     <div id="alert-banner" class="alert alert-danger alert-banner d-none mb-0 rounded-0">
         <div class="container d-flex justify-content-between align-items-center py-2">
             <div class="d-flex align-items-center">
                 <i class="fas fa-exclamation-triangle me-2"></i>
                 <div>
-                    <strong id="alert-message" class="me-2">WARNING: Abnormal sensor readings detected!</strong>
+                    <strong id="alert-message" class="me-2">PERINGATAN: Pembacaan sensor tidak normal!</strong>
                     <span id="alert-node" class="badge bg-dark me-2 d-none">Node 1</span>
                     <small id="alert-timestamp" class="text-white-50"></small>
                 </div>
             </div>
             <div>
                 <button id="silence-btn" class="btn btn-sm btn-outline-light me-2 d-none">
-                    <i class="fas fa-bell-slash me-1"></i> Silence Alarm
+                    <i class="fas fa-bell-slash me-1"></i> Matikan Alarm
                 </button>
                 <button id="more-info-btn" class="btn btn-sm btn-light">
-                    <i class="fas fa-info-circle me-1"></i> Details
+                    <i class="fas fa-info-circle me-1"></i> Detail
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Main Content -->
+    <!-- Konten Utama -->
     <main class="container py-4">
-        <!-- Dashboard Header -->
+        <!-- Header Dashboard -->
         <div class="text-center mb-5">
-            <h1 class="dashboard-title display-4 mb-2">TSUNAMI EARLY WARNING SYSTEM</h1>
-            <p class="dashboard-subtitle">Real-time Coastal Monitoring Network</p>
+            <h1 class="dashboard-title display-4 mb-2">SISTEM PERINGATAN DINI TSUNAMI</h1>
+            <p class="dashboard-subtitle">Jaringan Monitoring Pantai Real-time</p>
             <div class="d-flex flex-wrap justify-content-center align-items-center gap-3 mt-3">
                 <span class="status-badge status-normal">
-                    <span class="node-connection connection-active"></span>
-                    <span>Network Connected</span>
+                    <i class="fas fa-check-circle me-1"></i> Terhubung
                 </span>
                 <span class="status-badge status-normal">
-                    <i class="fas fa-satellite-dish me-1"></i> 4/4 Nodes Active
+                    <i class="fas fa-satellite-dish me-1"></i> 4/4 Node Aktif
                 </span>
                 <span class="status-badge bg-light text-dark real-time-blink" id="last-update">
-                    <i class="fas fa-clock me-1"></i> <?= date('Y-m-d H:i:s T') ?>
+                    <i class="fas fa-clock me-1"></i> <?= date('d/m/Y H:i:s') ?>
                 </span>
             </div>
         </div>
 
-        <!-- Node Filter Controls -->
+        <!-- Kontrol Filter Node -->
         <div class="card mb-4 border-0 shadow-sm">
             <div class="card-body py-3">
                 <div class="d-flex flex-wrap align-items-center justify-content-between">
                     <div class="d-flex align-items-center me-3 mb-2 mb-md-0">
-                        <span class="me-2 fw-medium">Filter Nodes:</span>
+                        <span class="me-2 fw-medium">Filter Node:</span>
                         <div class="btn-group btn-group-sm" role="group">
                             <?php for ($i = 1; $i <= 4; $i++): ?>
                             <button type="button" class="btn btn-outline-secondary node-filter-btn active" data-node="<?= $i ?>">
-                                <span class="node-badge node<?= $i ?> badge rounded-circle me-1"></span>
+                                <span class="node-badge node<?= $i ?> me-1"></span>
                                 Node <?= $i ?>
-                                <?php if (($nodesData[$i]['status'] ?? '') === 'DANGER'): ?>
+                                <?php if (($nodesData[$i]['status'] ?? '') === 'BAHAYA'): ?>
                                 <span class="notification-badge bg-danger rounded-circle text-white ms-1">!</span>
                                 <?php endif; ?>
                             </button>
@@ -569,54 +453,33 @@ include 'includes/navbar.php';
                     
                     <div class="d-flex align-items-center">
                         <button id="toggle-all-nodes" class="btn btn-sm btn-outline-primary me-2">
-                            <i class="fas fa-eye-slash me-1"></i> Toggle All
+                            <i class="fas fa-eye-slash me-1"></i> Tampilkan/Sembunyikan Semua
                         </button>
                         <div class="input-group input-group-sm" style="width: 220px;">
                             <span class="input-group-text bg-white"><i class="fas fa-search"></i></span>
-                            <input type="text" id="node-search" class="form-control" placeholder="Search nodes...">
+                            <input type="text" id="node-search" class="form-control" placeholder="Cari node...">
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Sensor Nodes Grid -->
+        <!-- Grid Node Sensor -->
         <div class="data-grid mb-4">
             <?php for ($i = 1; $i <= 4; $i++): 
                 $nodeData = $nodesData[$i] ?? [];
                 $vibrationLevel = $nodeData['vibration'] ?? 0;
                 $mpuLevel = $nodeData['mpu6050'] ?? 0;
-                $batteryLevel = $nodeData['battery'] ?? '--';
                 
-                // Determine status
-                $status = 'NORMAL';
-                $statusClass = 'status-normal';
-                $statusIcon = 'check-circle';
-                if ($vibrationLevel > VIBRATION_DANGER || $mpuLevel > ACCELERATION_DANGER) {
-                    $status = 'DANGER';
-                    $statusClass = 'status-danger';
-                    $statusIcon = 'exclamation-triangle';
-                } elseif ($vibrationLevel > VIBRATION_WARNING || $mpuLevel > ACCELERATION_WARNING) {
-                    $status = 'WARNING';
-                    $statusClass = 'status-warning';
-                    $statusIcon = 'exclamation-circle';
-                }
-                
-                // Determine battery level class
-                $batteryClass = '';
-                if ($batteryLevel !== '--') {
-                    if ($batteryLevel >= 70) {
-                        $batteryClass = 'battery-level-high';
-                    } elseif ($batteryLevel >= 30) {
-                        $batteryClass = 'battery-level-medium';
-                    } else {
-                        $batteryClass = 'battery-level-low';
-                    }
-                }
+                // Tentukan status
+                $status = $nodeData['status'] ?? 'NORMAL';
+                $statusClass = $nodeData['status_class'] ?? 'status-normal';
+                $statusIcon = ($status === 'BAHAYA') ? 'exclamation-triangle' : 
+                             (($status === 'PERINGATAN') ? 'exclamation-circle' : 'check-circle');
             ?>
             <div class="card node-card node<?= $i ?> h-100">
                 <div class="card-body">
-                    <div class="node-header mb-3">
+                    <div class="node-header mb-3 d-flex justify-content-between align-items-center">
                         <div class="d-flex align-items-center">
                             <div class="bg-<?= $i === 1 ? 'primary' : ($i === 2 ? 'success' : ($i === 3 ? 'warning' : 'danger')) ?> bg-opacity-10 p-2 rounded me-3">
                                 <i class="fas fa-satellite-dish fa-lg text-<?= $i === 1 ? 'primary' : ($i === 2 ? 'success' : ($i === 3 ? 'warning' : 'danger')) ?>"></i>
@@ -626,24 +489,15 @@ include 'includes/navbar.php';
                                 <small class="text-muted">ID: <?= sprintf('%011d', 80000000000 + $i) ?></small>
                             </div>
                         </div>
-                        <i class="node-status-icon fas fa-<?= $statusIcon ?>"></i>
+                        <i class="fas fa-<?= $statusIcon ?> fa-lg <?= $statusClass ?>"></i>
                     </div>
                     
-                    <div class="node-status mb-3">
+                    <div class="node-status mb-3 d-flex align-items-center">
                         <span class="status-badge <?= $statusClass ?>"><?= $status ?></span>
                         <span class="text-muted ms-2">
                             <i class="fas fa-clock me-1"></i>
                             <?= !empty($nodeData['timestamp']) ? date('H:i:s', strtotime($nodeData['timestamp'])) : 'N/A' ?>
                         </span>
-                        <?php if ($batteryLevel !== '--'): ?>
-                        <span class="float-end" data-bs-toggle="tooltip" title="Battery Level: <?= $batteryLevel ?>%">
-                            <span class="battery-indicator">
-                                <span class="battery-level <?= $batteryClass ?>" style="width: <?= $batteryLevel ?>%"></span>
-                                <span class="battery-tip"></span>
-                            </span>
-                            <small><?= $batteryLevel ?>%</small>
-                        </span>
-                        <?php endif; ?>
                     </div>
                     
                     <div class="sensor-readings">
@@ -652,7 +506,7 @@ include 'includes/navbar.php';
                                 <div class="sensor-card p-3 rounded bg-light bg-opacity-50">
                                     <i class="fas fa-bolt text-warning mb-2 fa-lg"></i>
                                     <div class="sensor-value"><?= $vibrationLevel ?></div>
-                                    <small class="text-muted sensor-unit">Vibration Level</small>
+                                    <small class="text-muted sensor-unit">Level Getaran</small>
                                     <div class="progress progress-thin mt-2">
                                         <div class="progress-bar bg-<?= $statusClass === 'status-danger' ? 'danger' : ($statusClass === 'status-warning' ? 'warning' : 'success') ?>" 
                                              style="width: <?= min(($vibrationLevel / 1000 * 100), 100) ?>%"></div>
@@ -663,7 +517,7 @@ include 'includes/navbar.php';
                                 <div class="sensor-card p-3 rounded bg-light bg-opacity-50">
                                     <i class="fas fa-ruler-combined text-danger mb-2 fa-lg"></i>
                                     <div class="sensor-value"><?= round($mpuLevel, 2) ?> <span class="sensor-unit">m/s²</span></div>
-                                    <small class="text-muted sensor-unit">Acceleration</small>
+                                    <small class="text-muted sensor-unit">Akselerasi</small>
                                     <div class="progress progress-thin mt-2">
                                         <div class="progress-bar bg-<?= $statusClass === 'status-danger' ? 'danger' : ($statusClass === 'status-warning' ? 'warning' : 'success') ?>" 
                                              style="width: <?= min(($mpuLevel / 20 * 100), 100) ?>%"></div>
@@ -696,7 +550,7 @@ include 'includes/navbar.php';
                     
                     <div class="mt-3 pt-2 border-top">
                         <button class="btn btn-sm btn-outline-secondary w-100" data-node="<?= $i ?>" onclick="showNodeDetails(this)">
-                            <i class="fas fa-chart-line me-1"></i> View Details
+                            <i class="fas fa-chart-line me-1"></i> Lihat Detail
                         </button>
                     </div>
                 </div>
@@ -704,239 +558,75 @@ include 'includes/navbar.php';
             <?php endfor; ?>
         </div>
 
-        <!-- Interactive Chart Section -->
+        <!-- Bagian Grafik Interaktif -->
         <div class="card mb-4 border-0 shadow-sm">
             <div class="card-header bg-primary text-white py-3">
                 <div class="d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Real-time Sensor Data Visualization</h5>
-                    <div>
-                        <div class="dropdown d-inline-block me-2">
-                            <button class="btn btn-sm btn-outline-light dropdown-toggle" type="button" id="timeRangeDropdown" data-bs-toggle="dropdown">
-                                <i class="fas fa-clock me-1"></i> Last 1 Hour
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item time-range" href="#" data-range="1">Last 1 Hour</a></li>
-                                <li><a class="dropdown-item time-range" href="#" data-range="6">Last 6 Hours</a></li>
-                                <li><a class="dropdown-item time-range" href="#" data-range="24">Last 24 Hours</a></li>
-                                <li><a class="dropdown-item time-range" href="#" data-range="168">Last 7 Days</a></li>
-                            </ul>
-                        </div>
-                        <button id="export-chart" class="btn btn-sm btn-light">
-                            <i class="fas fa-download me-1"></i> Export
-                        </button>
+                    <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Visualisasi Data Sensor Real-time</h5>
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button type="button" class="btn btn-outline-light time-filter-btn active" data-hours="1">1 Jam</button>
+                        <button type="button" class="btn btn-outline-light time-filter-btn" data-hours="6">6 Jam</button>
+                        <button type="button" class="btn btn-outline-light time-filter-btn" data-hours="24">24 Jam</button>
+                        <button type="button" class="btn btn-outline-light sensor-filter-btn active" data-sensor="vibration">Getaran</button>
+                        <button type="button" class="btn btn-outline-light sensor-filter-btn active" data-sensor="acceleration">Akselerasi</button>
+                        <button type="button" class="btn btn-outline-light sensor-filter-btn" data-sensor="temperature">Suhu</button>
+                        <button type="button" class="btn btn-outline-light sensor-filter-btn" data-sensor="humidity">Kelembaban</button>
                     </div>
                 </div>
             </div>
             <div class="card-body">
-                <div class="row">
-                    <div class="col-lg-9">
-                        <div class="chart-container shadow-sm">
-                            <canvas id="sensorChart"></canvas>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 mt-3 mt-lg-0">
-                        <div class="card h-100 border-0 shadow-sm">
-                            <div class="card-header bg-light py-3">
-                                <h6 class="mb-0"><i class="fas fa-filter me-1"></i>Chart Controls</h6>
-                            </div>
-                            <div class="card-body p-3 sensor-selector">
-                                <h6 class="mb-3 fw-medium">Nodes:</h6>
-                                <div class="mb-4">
-                                    <?php for ($i = 1; $i <= 4; $i++): ?>
-                                    <div class="form-check form-switch mb-2">
-                                        <input class="form-check-input node-selector" type="checkbox" role="switch" value="<?= $i ?>" id="node-<?= $i ?>" checked>
-                                        <label class="form-check-label" for="node-<?= $i ?>">
-                                            <span class="node-badge node<?= $i ?> badge rounded-circle me-1"></span>
-                                            Node <?= $i ?>
-                                        </label>
-                                    </div>
-                                    <?php endfor; ?>
-                                </div>
-                                
-                                <h6 class="mb-3 fw-medium">Sensors:</h6>
-                                <div class="form-check form-switch mb-2">
-                                    <input class="form-check-input sensor-type" type="checkbox" role="switch" value="vibration" id="vibration-sensor" checked>
-                                    <label class="form-check-label" for="vibration-sensor">
-                                        <i class="fas fa-bolt text-warning me-1"></i> Vibration
-                                    </label>
-                                </div>
-                                <div class="form-check form-switch mb-2">
-                                    <input class="form-check-input sensor-type" type="checkbox" role="switch" value="mpu6050" id="accel-sensor" checked>
-                                    <label class="form-check-label" for="accel-sensor">
-                                        <i class="fas fa-ruler-combined text-danger me-1"></i> Acceleration
-                                    </label>
-                                </div>
-                                <div class="form-check form-switch mb-2">
-                                    <input class="form-check-input sensor-type" type="checkbox" role="switch" value="temperature" id="temp-sensor">
-                                    <label class="form-check-label" for="temp-sensor">
-                                        <i class="fas fa-temperature-high text-danger me-1"></i> Temperature
-                                    </label>
-                                </div>
-                                <div class="form-check form-switch mb-2">
-                                    <input class="form-check-input sensor-type" type="checkbox" role="switch" value="humidity" id="humidity-sensor">
-                                    <label class="form-check-label" for="humidity-sensor">
-                                        <i class="fas fa-tint text-info me-1"></i> Humidity
-                                    </label>
-                                </div>
-                                <div class="form-check form-switch mb-2">
-                                    <input class="form-check-input sensor-type" type="checkbox" role="switch" value="pressure" id="pressure-sensor">
-                                    <label class="form-check-label" for="pressure-sensor">
-                                        <i class="fas fa-tachometer-alt text-warning me-1"></i> Pressure
-                                    </label>
-                                </div>
-                                
-                                <div class="d-grid gap-2 mt-4">
-                                    <button id="update-chart" class="btn btn-primary btn-sm">
-                                        <i class="fas fa-sync-alt me-1"></i> Update Chart
-                                    </button>
-                                    <button id="reset-chart" class="btn btn-outline-secondary btn-sm">
-                                        <i class="fas fa-undo me-1"></i> Reset View
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <div class="chart-container shadow-sm">
+                    <canvas id="sensorChart"></canvas>
                 </div>
             </div>
         </div>
 
-        <!-- Map and System Status Section -->
-        <div class="row g-4 mb-4">
-            <div class="col-lg-8">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-header bg-info text-white py-3">
-                        <h5 class="mb-0"><i class="fas fa-map-marked-alt me-2"></i>Sensor Network Map</h5>
-                    </div>
-                    <div class="card-body p-0">
-                        <div id="sensor-map" class="map-container"></div>
-                    </div>
-                    <div class="card-footer bg-light py-2 small">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span><i class="fas fa-info-circle me-1"></i> Click on markers for node details</span>
-                            <button id="refresh-map" class="btn btn-sm btn-outline-info">
-                                <i class="fas fa-sync-alt me-1"></i> Refresh
-                            </button>
-                        </div>
+        <!-- Bagian Peta Jaringan Sensor -->
+        <div class="card mb-4 border-0 shadow-sm">
+            <div class="card-header bg-info text-white py-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-map-marked-alt me-2"></i>Peta Jaringan Sensor</h5>
+                    <div>
+                        <button id="refresh-map" class="btn btn-sm btn-outline-light">
+                            <i class="fas fa-sync-alt me-1"></i> Segarkan Peta
+                        </button>
                     </div>
                 </div>
             </div>
-            
-            <div class="col-lg-4">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-header bg-secondary text-white py-3">
-                        <h5 class="mb-0"><i class="fas fa-clipboard-list me-2"></i>System Status</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="system-health-card p-3 mb-4 rounded bg-light">
-                            <h6 class="mb-3"><i class="fas fa-heartbeat me-2"></i>System Health</h6>
-                            <div class="row g-2">
-                                <div class="col-6">
-                                    <div class="p-2 rounded bg-white">
-                                        <div class="d-flex align-items-center">
-                                            <div class="bg-success bg-opacity-10 p-2 rounded me-2">
-                                                <i class="fas fa-server text-success"></i>
-                                            </div>
-                                            <div>
-                                                <div class="fw-medium">Backend</div>
-                                                <small class="text-success">Operational</small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="p-2 rounded bg-white">
-                                        <div class="d-flex align-items-center">
-                                            <div class="bg-success bg-opacity-10 p-2 rounded me-2">
-                                                <i class="fas fa-database text-success"></i>
-                                            </div>
-                                            <div>
-                                                <div class="fw-medium">Database</div>
-                                                <small class="text-success">Connected</small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="p-2 rounded bg-white">
-                                        <div class="d-flex align-items-center">
-                                            <div class="bg-success bg-opacity-10 p-2 rounded me-2">
-                                                <i class="fas fa-network-wired text-success"></i>
-                                            </div>
-                                            <div>
-                                                <div class="fw-medium">Network</div>
-                                                <small class="text-success">Stable</small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="p-2 rounded bg-white">
-                                        <div class="d-flex align-items-center">
-                                            <div class="bg-success bg-opacity-10 p-2 rounded me-2">
-                                                <i class="fas fa-cloud text-success"></i>
-                                            </div>
-                                            <div>
-                                                <div class="fw-medium">API</div>
-                                                <small class="text-success">Online</small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <h6 class="mb-3"><i class="fas fa-history me-2"></i>Recent Events</h6>
-                        <div id="event-logs" class="event-log small">
-                            <?php
-                            try {
-                                $logs = $conn->query("
-                                    SELECT * FROM event_logs 
-                                    ORDER BY timestamp DESC 
-                                    LIMIT 6
-                                ")->fetchAll();
-                                
-                                if (empty($logs)) {
-                                    echo '<div class="alert alert-info mb-0">No recent events found</div>';
-                                } else {
-                                    echo '<div class="list-group list-group-flush">';
-                                    foreach ($logs as $log) {
-                                        $icon = 'info-circle';
-                                        $color = 'text-primary';
-                                        $badge = '';
-                                        if (strpos(strtolower($log['message']), 'error') !== false) {
-                                            $icon = 'exclamation-triangle';
-                                            $color = 'text-danger';
-                                            $badge = '<span class="badge bg-danger float-end">Error</span>';
-                                        } elseif (strpos(strtolower($log['message']), 'warning') !== false) {
-                                            $icon = 'exclamation-circle';
-                                            $color = 'text-warning';
-                                            $badge = '<span class="badge bg-warning text-dark float-end">Warning</span>';
-                                        } elseif (strpos(strtolower($log['message']), 'alert') !== false) {
-                                            $icon = 'bell';
-                                            $color = 'text-danger';
-                                            $badge = '<span class="badge bg-danger float-end">Alert</span>';
-                                        }
-                                        
-                                        echo '<div class="list-group-item border-0 px-0 py-2">';
-                                        echo '<div class="d-flex justify-content-between mb-1">';
-                                        echo '<div><i class="fas fa-'.$icon.' me-2 '.$color.'"></i> '.date('H:i', strtotime($log['timestamp'])).'</div>';
-                                        echo $badge;
-                                        echo '</div>';
-                                        echo '<div class="text-muted small">'.htmlspecialchars($log['message']).'</div>';
-                                        echo '</div>';
-                                    }
-                                    echo '</div>';
-                                }
-                            } catch (PDOException $e) {
-                                echo '<div class="alert alert-danger mb-0">Failed to load event logs</div>';
-                            }
-                            ?>
-                        </div>
-                    </div>
-                    <div class="card-footer bg-light py-2 small">
-                        <button id="view-all-events" class="btn btn-sm btn-outline-secondary w-100">
-                            <i class="fas fa-list me-1"></i> View All Events
+            <div class="card-body p-0">
+                <div id="sensor-map" class="map-container map-full-height"></div>
+                <!-- Panel Kontrol Peta -->
+                <div class="map-control-panel">
+                    <div class="btn-group-vertical btn-group-sm" role="group">
+                        <button id="zoom-in-btn" class="btn btn-light" title="Zoom In">
+                            <i class="fas fa-plus"></i>
                         </button>
+                        <button id="zoom-out-btn" class="btn btn-light" title="Zoom Out">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <button id="center-map-btn" class="btn btn-light" title="Pusatkan Peta">
+                            <i class="fas fa-crosshairs"></i>
+                        </button>
+                    </div>
+                </div>
+                <!-- Legend Peta -->
+                <div class="map-legend">
+                    <h6 class="mb-2">Legenda</h6>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #4e73df;"></div>
+                        <span>Node 1</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #1cc88a;"></div>
+                        <span>Node 2</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #f6c23e;"></div>
+                        <span>Node 3</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #e74a3b;"></div>
+                        <span>Node 4</span>
                     </div>
                 </div>
             </div>
@@ -945,13 +635,13 @@ include 'includes/navbar.php';
 
     <?php include 'includes/footer.php'; ?>
 
-    <!-- Node Details Modal -->
+    <!-- Modal Detail Node -->
     <div class="modal fade" id="nodeDetailsModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="nodeModalTitle">Node Details</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title" id="nodeModalTitle">Detail Node</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
                 </div>
                 <div class="modal-body">
                     <div class="row">
@@ -967,122 +657,230 @@ include 'includes/navbar.php';
                         </div>
                     </div>
                     <div class="mt-4">
-                        <h6>Recent Readings</h6>
+                        <h6>Pembacaan Terakhir</h6>
                         <div class="table-responsive">
                             <table class="table table-sm">
                                 <thead>
                                     <tr>
-                                        <th>Time</th>
-                                        <th>Vibration</th>
-                                        <th>Acceleration</th>
-                                        <th>Temp (°C)</th>
-                                        <th>Humidity</th>
+                                        <th>Waktu</th>
+                                        <th>Getaran</th>
+                                        <th>Akselerasi</th>
+                                        <th>Suhu (°C)</th>
+                                        <th>Kelembaban</th>
                                     </tr>
                                 </thead>
                                 <tbody id="nodeReadingsTable">
-                                    <!-- Filled by JavaScript -->
+                                    <!-- Diisi oleh JavaScript -->
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
                     <button type="button" class="btn btn-primary">
-                        <i class="fas fa-download me-1"></i> Export Data
+                        <i class="fas fa-download me-1"></i> Ekspor Data
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Audio Alerts -->
-    <audio id="alert-sound" loop>
-        <source src="<?= ASSETS_PATH ?>/audio/alert.mp3" type="audio/mpeg">
-    </audio>
-    <audio id="siren-sound" loop>
-        <source src="<?= ASSETS_PATH ?>/audio/siren.mp3" type="audio/mpeg">
+    <!-- Audio Alert -->
+    <audio id="alert-sound">
+        <source src="assets/audio/alert.mp3" type="audio/mpeg">
     </audio>
 
-    <!-- JavaScript -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <audio id="siren-sound">
+        <source src="assets/audio/siren.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.1/dist/chartjs-adapter-moment.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-    
+
     <script>
-    // Global variables
+    // Variabel global
     const nodeMarkers = {};
+    const nodeLocations = <?= json_encode($nodeLocations) ?>;
     let sensorChart, nodeVibrationChart, nodeAccelChart;
     let currentHours = 1;
+    let activeSensors = ['vibration', 'acceleration'];
     let lastAlertNode = null;
     let alertSoundPlaying = false;
     let sirenPlaying = false;
+    let map;
     
+    // Fungsi untuk memastikan plugin Chart terload
+    function ensureChartPlugins() {
+        return new Promise((resolve, reject) => {
+            if (typeof Chart === 'undefined') {
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+                script.onload = () => {
+                    loadChartAnnotation().then(resolve).catch(reject);
+                };
+                script.onerror = reject;
+                document.head.appendChild(script);
+            } else {
+                loadChartAnnotation().then(resolve).catch(reject);
+            }
+        });
+    }
+
+    function loadChartAnnotation() {
+        return new Promise((resolve, reject) => {
+            if (typeof Chart.Annotation !== 'undefined') {
+                resolve();
+            } else {
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js';
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            }
+        });
+    }
+
+    // Fungsi utama setelah DOM ready
     $(document).ready(function() {
-        // Initialize tooltips
-        $('[data-bs-toggle="tooltip"]').tooltip();
+        // Inisialisasi komponen
+        initMap();
+        initAudioSystem();
         
-        // Initialize map
-        const map = initMap();
+        // Inisialisasi chart dengan fallback
+        ensureChartPlugins()
+            .then(() => {
+                initMainChart();
+                loadChartData(currentHours);
+            })
+            .catch(error => {
+                console.error('Gagal memuat plugin chart:', error);
+                initBasicChart();
+            });
         
-        // Initialize main chart
-        sensorChart = initMainChart();
-        
-        // Load initial data
-        loadChartData(currentHours);
+        // Muat data awal
         fetchLatestData();
         
-        // Set up event handlers
+        // Setup event handlers
         setupEventHandlers();
         
-        // Start auto-refresh
+        // Mulai auto-refresh
         startAutoRefresh();
     });
     
     function initMap() {
-        const map = L.map('sensor-map').setView([-6.2088, 106.8456], 11);
+    try {
+        // 1. Validasi nodeLocations
+        if (!nodeLocations || typeof nodeLocations !== 'object') {
+            throw new Error('Invalid node locations data');
+        }
+
+        // 2. Filter lokasi yang valid
+        const validLocations = {};
+        for (const nodeId in nodeLocations) {
+            const loc = nodeLocations[nodeId];
+            
+            // Konversi ke number dan cek valid
+            const lat = parseFloat(loc.latitude);
+            const lng = parseFloat(loc.longitude);
+            
+            if (!isNaN(lat) && !isNaN(lng)) {
+                validLocations[nodeId] = {
+                    latitude: lat,
+                    longitude: lng,
+                    status: loc.status,
+                    status_class: loc.status_class,
+                    timestamp: loc.timestamp
+                };
+            }
+        }
+
+        // 3. Jika tidak ada lokasi valid
+        if (Object.keys(validLocations).length === 0) {
+            throw new Error('No valid coordinates available');
+        }
+
+        // 4. Hitung rata-rata koordinat
+        const coords = Object.values(validLocations);
+        const avgLat = coords.reduce((sum, loc) => sum + loc.latitude, 0) / coords.length;
+        const avgLng = coords.reduce((sum, loc) => sum + loc.longitude, 0) / coords.length;
+
+        // 5. Inisialisasi peta
+        map = L.map('sensor-map').setView([avgLat, avgLng], 8);
         
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            attribution: '&copy; OpenStreetMap contributors'
         }).addTo(map);
-        
-        // Add markers for each node
-        <?php for ($i = 1; $i <= 4; $i++): 
-            $nodeData = $nodesData[$i] ?? [];
-            if (!empty($nodeData['latitude']) && !empty($nodeData['longitude'])):
-        ?>
-            nodeMarkers[<?= $i ?>] = L.marker([<?= $nodeData['latitude'] ?>, <?= $nodeData['longitude'] ?>], {
+
+        // 6. Tambahkan marker untuk lokasi valid
+        for (const nodeId in validLocations) {
+            const loc = validLocations[nodeId];
+            
+            nodeMarkers[nodeId] = L.marker([loc.latitude, loc.longitude], {
                 icon: L.divIcon({
-                    html: `<div class="node-marker marker-<?= $i ?>" data-node="<?= $i ?>">
-                              <span class="marker-pin"></span>
-                              <span class="marker-label"><?= $i ?></span>
+                    html: `<div class="node-marker marker-${nodeId}">
+                              <span class="marker-pin" style="background-color: ${getNodeColor(nodeId)}"></span>
+                              <span class="marker-label">${nodeId}</span>
                            </div>`,
                     className: '',
                     iconSize: [30, 42],
                     iconAnchor: [15, 42]
                 })
             }).addTo(map)
-            .bindPopup(`<b>Node <?= $i ?></b><br>
-                        Location: <?= round($nodeData['latitude'], 4) ?>, <?= round($nodeData['longitude'], 4) ?><br>
-                        Last update: <?= !empty($nodeData['timestamp']) ? date('H:i:s', strtotime($nodeData['timestamp'])) : 'N/A' ?>`);
-        <?php endif; endfor; ?>
+            .bindPopup(`<b>Node ${nodeId}</b><br>
+                        Lokasi: ${loc.latitude.toFixed(4)}, ${loc.longitude.toFixed(4)}<br>
+                        Status: <span class="${loc.status_class}">${loc.status}</span><br>
+                        Update: ${loc.timestamp}`);
+        }
+
+    } catch (error) {
+        console.error('Gagal inisialisasi peta:', error);
+        $('#sensor-map').html(`
+            <div class="alert alert-danger p-3">
+                <h5>Gagal Memuat Peta</h5>
+                <p>${error.message}</p>
+                <p>Data koordinat mungkin tidak valid atau tidak tersedia.</p>
+            </div>
+        `);
         
-        return map;
+        // Tampilkan data koordinat untuk debugging
+        console.log('Data nodeLocations:', nodeLocations);
+    }
+}
+
+    function initAudioSystem() {
+        // Nonaktifkan error audio yang mengganggu
+        window.addEventListener('error', function(e) {
+            if (e.target.tagName === 'AUDIO' || e.target.tagName === 'SOURCE') {
+                e.preventDefault();
+                console.log('Audio error ditangani:', e.target.src);
+            }
+        }, true);
+        
+        // Fallback jika audio tidak ada
+        if (!$('#alert-sound source')[0] || !$('#siren-sound source')[0]) {
+            console.log('File audio tidak ditemukan, menonaktifkan fitur suara');
+            $('#alert-sound, #siren-sound').remove();
+            $('#alert-siren-btn').prop('disabled', true)
+                .html('<i class="fas fa-bell-slash me-1"></i> Sirene Tidak Tersedia');
+        }
     }
     
     function initMainChart() {
-        const ctx = document.getElementById('sensorChart').getContext('2d');
-        
-        return new Chart(ctx, {
-            type: 'line',
-            data: { datasets: [] },
-            options: {
+        try {
+            const ctx = document.getElementById('sensorChart');
+            if (!ctx) {
+                throw new Error('Canvas element tidak ditemukan');
+            }
+            
+            const options = {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
@@ -1096,23 +894,11 @@ include 'includes/navbar.php';
                             padding: 20,
                             usePointStyle: true,
                             pointStyle: 'circle'
-                        },
-                        onClick: function(e, legendItem, legend) {
-                            const index = legendItem.datasetIndex;
-                            const ci = legend.chart;
-                            const meta = ci.getDatasetMeta(index);
-
-                            meta.hidden = meta.hidden === null ? !ci.data.datasets[index].hidden : null;
-                            ci.update();
                         }
                     },
                     tooltip: {
                         mode: 'index',
                         intersect: false,
-                        backgroundColor: 'rgba(0,0,0,0.8)',
-                        titleFont: { family: 'Poppins', size: 12 },
-                        bodyFont: { family: 'Poppins', size: 12 },
-                        padding: 12,
                         callbacks: {
                             label: function(context) {
                                 let label = context.dataset.label || '';
@@ -1121,13 +907,13 @@ include 'includes/navbar.php';
                                 }
                                 if (context.parsed.y !== null) {
                                     label += context.parsed.y.toFixed(2);
-                                    if (context.dataset.label.includes('Temp')) {
+                                    if (context.dataset.label.includes('Suhu')) {
                                         label += '°C';
-                                    } else if (context.dataset.label.includes('Humidity')) {
+                                    } else if (context.dataset.label.includes('Kelembaban')) {
                                         label += '%';
-                                    } else if (context.dataset.label.includes('Pressure')) {
+                                    } else if (context.dataset.label.includes('Tekanan')) {
                                         label += ' hPa';
-                                    } else if (context.dataset.label.includes('Accel')) {
+                                    } else if (context.dataset.label.includes('Akselerasi')) {
                                         label += ' m/s²';
                                     }
                                 }
@@ -1145,42 +931,6 @@ include 'includes/navbar.php';
                             enabled: true,
                             mode: 'xy'
                         }
-                    },
-                    annotation: {
-                        annotations: {
-                            dangerLine: {
-                                type: 'line',
-                                yMin: <?= ACCELERATION_DANGER ?>,
-                                yMax: <?= ACCELERATION_DANGER ?>,
-                                borderColor: '#e74a3b',
-                                borderWidth: 1,
-                                borderDash: [6, 6],
-                                label: {
-                                    content: 'Danger Threshold',
-                                    enabled: true,
-                                    position: 'left',
-                                    backgroundColor: 'rgba(231, 74, 59, 0.8)',
-                                    color: 'white',
-                                    font: { size: 10 }
-                                }
-                            },
-                            warningLine: {
-                                type: 'line',
-                                yMin: <?= ACCELERATION_WARNING ?>,
-                                yMax: <?= ACCELERATION_WARNING ?>,
-                                borderColor: '#f6c23e',
-                                borderWidth: 1,
-                                borderDash: [6, 6],
-                                label: {
-                                    content: 'Warning Threshold',
-                                    enabled: true,
-                                    position: 'left',
-                                    backgroundColor: 'rgba(246, 194, 62, 0.8)',
-                                    color: '#212529',
-                                    font: { size: 10 }
-                                }
-                            }
-                        }
                     }
                 },
                 scales: {
@@ -1196,21 +946,15 @@ include 'includes/navbar.php';
                         },
                         title: {
                             display: true,
-                            text: 'Time',
+                            text: 'Waktu',
                             font: { family: 'Poppins', weight: 'bold' }
-                        },
-                        grid: {
-                            color: 'rgba(0,0,0,0.05)'
                         }
                     },
                     y: {
                         title: {
                             display: true,
-                            text: 'Sensor Values',
+                            text: 'Nilai Sensor',
                             font: { family: 'Poppins', weight: 'bold' }
-                        },
-                        grid: {
-                            color: 'rgba(0,0,0,0.05)'
                         }
                     }
                 },
@@ -1227,48 +971,107 @@ include 'includes/navbar.php';
                         hoverRadius: 6
                     }
                 }
-            },
-            plugins: [ChartAnnotation, ChartZoom]
-        });
+            };
+
+            // Tambahkan annotation jika plugin tersedia
+            if (typeof Chart.Annotation !== 'undefined') {
+                options.plugins.annotation = {
+                    annotations: {
+                        dangerLine: {
+                            type: 'line',
+                            yMin: <?= ACCELERATION_DANGER ?>,
+                            yMax: <?= ACCELERATION_DANGER ?>,
+                            borderColor: '#e74a3b',
+                            borderWidth: 1,
+                            borderDash: [6, 6],
+                            label: {
+                                content: 'Batas Bahaya',
+                                enabled: true,
+                                position: 'left',
+                                backgroundColor: 'rgba(231, 74, 59, 0.8)',
+                                color: 'white',
+                                font: { size: 10 }
+                            }
+                        },
+                        warningLine: {
+                            type: 'line',
+                            yMin: <?= ACCELERATION_WARNING ?>,
+                            yMax: <?= ACCELERATION_WARNING ?>,
+                            borderColor: '#f6c23e',
+                            borderWidth: 1,
+                            borderDash: [6, 6],
+                            label: {
+                                content: 'Batas Peringatan',
+                                enabled: true,
+                                position: 'left',
+                                backgroundColor: 'rgba(246, 194, 62, 0.8)',
+                                color: '#212529',
+                                font: { size: 10 }
+                            }
+                        }
+                    }
+                };
+            }
+
+            sensorChart = new Chart(ctx.getContext('2d'), {
+                type: 'line',
+                data: { datasets: [] },
+                options: options,
+                plugins: [
+                    ...(typeof Chart.Annotation !== 'undefined' ? [Chart.Annotation] : []),
+                    ...(typeof Chart.Zoom !== 'undefined' ? [Chart.Zoom] : [])
+                ]
+            });
+            
+        } catch (error) {
+            console.error('Gagal inisialisasi chart utama:', error);
+            initBasicChart();
+        }
+    }
+
+    function initBasicChart() {
+        try {
+            const ctx = document.getElementById('sensorChart');
+            if (!ctx) return;
+            
+            sensorChart = new Chart(ctx.getContext('2d'), {
+                type: 'line',
+                data: { datasets: [] },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { type: 'time' },
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+            
+            console.log('Chart dasar berhasil diinisialisasi');
+        } catch (error) {
+            console.error('Gagal inisialisasi chart dasar:', error);
+            $('#sensorChart').replaceWith('<div class="alert alert-warning">Grafik tidak dapat dimuat</div>');
+        }
     }
     
     function setupEventHandlers() {
-        // Time range selector
-        $('.time-range').click(function(e) {
-            e.preventDefault();
-            currentHours = $(this).data('range');
-            $('#timeRangeDropdown').html(`<i class="fas fa-clock me-1"></i> ${$(this).text()}`);
-            loadChartData(currentHours);
-        });
-        
-        // Update chart button
-        $('#update-chart').click(function() {
-            loadChartData(currentHours);
-        });
-        
-        // Reset chart view
-        $('#reset-chart').click(function() {
-            if (sensorChart) {
-                sensorChart.resetZoom();
-            }
-        });
-        
-        // Export chart as image
-        $('#export-chart').click(function() {
-            if (sensorChart) {
-                const canvas = document.getElementById('sensorChart');
-                const link = document.createElement('a');
-                link.download = `tsunami-sensor-data-${new Date().toISOString().slice(0,10)}.png`;
-                link.href = canvas.toDataURL('image/png');
-                link.click();
-            }
-        });
-        
         // Node filter buttons
         $('.node-filter-btn').click(function() {
             $(this).toggleClass('active');
             const nodeId = $(this).data('node');
             $(`.node-card.node${nodeId}`).toggleClass('d-none');
+            
+            // Update chart visibility
+            if (sensorChart) {
+                const datasets = sensorChart.data.datasets;
+                for (let i = 0; i < datasets.length; i++) {
+                    if (datasets[i].label.includes(`Node ${nodeId}`)) {
+                        const meta = sensorChart.getDatasetMeta(i);
+                        meta.hidden = !$(this).hasClass('active');
+                    }
+                }
+                sensorChart.update();
+            }
         });
         
         // Toggle all nodes button
@@ -1276,61 +1079,108 @@ include 'includes/navbar.php';
             const allActive = $('.node-filter-btn.active').length === 4;
             $('.node-filter-btn').toggleClass('active', !allActive);
             $('.node-card').toggleClass('d-none', allActive);
-            $(this).html(`<i class="fas fa-eye${allActive ? '' : '-slash'} me-1"></i> ${allActive ? 'Show' : 'Hide'} All`);
+            $(this).html(`<i class="fas fa-eye${allActive ? '' : '-slash'} me-1"></i> ${allActive ? 'Tampilkan' : 'Sembunyikan'} Semua`);
+            
+            // Update chart visibility
+            if (sensorChart) {
+                const datasets = sensorChart.data.datasets;
+                for (let i = 0; i < datasets.length; i++) {
+                    const nodeId = Math.ceil((i+1)/2); // Karena ada 2 dataset per node
+                    const meta = sensorChart.getDatasetMeta(i);
+                    meta.hidden = !$(`.node-filter-btn[data-node="${nodeId}"]`).hasClass('active');
+                }
+                sensorChart.update();
+            }
         });
         
-        // Node search
-        $('#node-search').on('input', function() {
-            const searchTerm = $(this).val().toLowerCase();
-            $('.node-card').each(function() {
-                const nodeText = $(this).text().toLowerCase();
-                $(this).toggle(nodeText.includes(searchTerm));
-            });
+        // Time filter buttons
+        $('.time-filter-btn').click(function() {
+            $('.time-filter-btn').removeClass('active');
+            $(this).addClass('active');
+            currentHours = parseInt($(this).data('hours'));
+            loadChartData(currentHours);
+        });
+        
+        // Sensor filter buttons
+        $('.sensor-filter-btn').click(function() {
+            $(this).toggleClass('active');
+            const sensorType = $(this).data('sensor');
+            
+            // Update active sensors
+            if ($(this).hasClass('active')) {
+                if (!activeSensors.includes(sensorType)) {
+                    activeSensors.push(sensorType);
+                }
+            } else {
+                activeSensors = activeSensors.filter(s => s !== sensorType);
+            }
+            
+            loadChartData(currentHours);
         });
         
         // Refresh map
         $('#refresh-map').click(function() {
-            const currentCenter = map.getCenter();
-            const currentZoom = map.getZoom();
-            map.setView(currentCenter, currentZoom, { animate: true });
+            if (map) {
+                const currentCenter = map.getCenter();
+                const currentZoom = map.getZoom();
+                map.setView(currentCenter, currentZoom, { animate: true });
+            }
         });
         
-        // View all events
-        $('#view-all-events').click(function() {
-            // In a real app, this would navigate to a full events page
-            alert('This would open a full event log page in a complete application.');
+        // Zoom controls
+        $('#zoom-in-btn').click(function() {
+            if (map) map.zoomIn();
+        });
+        
+        $('#zoom-out-btn').click(function() {
+            if (map) map.zoomOut();
+        });
+        
+        $('#center-map-btn').click(function() {
+            if (map && Object.keys(nodeMarkers).length > 0) {
+                const group = new L.featureGroup(Object.values(nodeMarkers));
+                map.fitBounds(group.getBounds().pad(0.2));
+            }
         });
         
         // Alert panel buttons
         $('#alert-details-btn').click(function() {
             if (lastAlertNode) {
                 showNodeDetails(lastAlertNode);
-            } else {
-                alert('No specific node alert to show details for.');
             }
         });
         
         $('#alert-siren-btn').click(function() {
             const sirenSound = document.getElementById('siren-sound');
+            if (!sirenSound) {
+                alert('Sirene tidak tersedia');
+                return;
+            }
+            
             if (sirenPlaying) {
                 sirenSound.pause();
                 sirenSound.currentTime = 0;
                 sirenPlaying = false;
                 $(this).removeClass('btn-danger').addClass('btn-light');
-                $(this).html('<i class="fas fa-bullhorn me-1"></i> Emergency Siren');
+                $(this).html('<i class="fas fa-bullhorn me-1"></i> Sirene Darurat');
             } else {
-                sirenSound.play();
+                sirenSound.play().catch(e => {
+                    console.error('Gagal memutar sirene:', e);
+                    alert('Gagal memutar sirene. Pastikan browser mengizinkan audio.');
+                });
                 sirenPlaying = true;
                 $(this).removeClass('btn-light').addClass('btn-danger');
-                $(this).html('<i class="fas fa-stop me-1"></i> Stop Siren');
+                $(this).html('<i class="fas fa-stop me-1"></i> Matikan Sirene');
             }
         });
         
         // Silence button
         $('#silence-btn').click(function() {
             const alertSound = document.getElementById('alert-sound');
-            alertSound.pause();
-            alertSound.currentTime = 0;
+            if (alertSound) {
+                alertSound.pause();
+                alertSound.currentTime = 0;
+            }
             alertSoundPlaying = false;
             $(this).addClass('d-none');
         });
@@ -1345,132 +1195,163 @@ include 'includes/navbar.php';
         });
     }
     
+    function loadChartData(hours) {
+        $.get('api/get-node-data.php', { 
+            hours: hours,
+            sensors: activeSensors.join(',')
+        })
+        .done(function(data) {
+            if (data.status === 'success') {
+                updateMainChart(data);
+            }
+        })
+        .fail(function(jqXHR, textStatus, errorThrown) {
+            console.error('Gagal memuat data grafik:', textStatus, errorThrown);
+            // Tampilkan data dummy untuk development
+            if (window.location.hostname === 'localhost') {
+                console.log('Menggunakan data dummy untuk development');
+                updateMainChart(getDummyData());
+            }
+        });
+    }
+    
+    function getDummyData() {
+        // Generate dummy data untuk development
+        const now = new Date();
+        const data = {
+            status: 'success',
+            node1: {
+                vibration: Array(24).fill().map((_, i) => ({
+                    x: new Date(now.getTime() - (23 - i) * 3600000),
+                    y: Math.floor(Math.random() * 500) + 100
+                })),
+                acceleration: Array(24).fill().map((_, i) => ({
+                    x: new Date(now.getTime() - (23 - i) * 3600000),
+                    y: Math.random() * 10 + 2
+                })),
+                temperature: Array(24).fill().map((_, i) => ({
+                    x: new Date(now.getTime() - (23 - i) * 3600000),
+                    y: Math.random() * 10 + 25
+                })),
+                humidity: Array(24).fill().map((_, i) => ({
+                    x: new Date(now.getTime() - (23 - i) * 3600000),
+                    y: Math.random() * 30 + 60
+                }))
+            },
+            node2: {
+                vibration: Array(24).fill().map((_, i) => ({
+                    x: new Date(now.getTime() - (23 - i) * 3600000),
+                    y: Math.floor(Math.random() * 600) + 50
+                })),
+                acceleration: Array(24).fill().map((_, i) => ({
+                    x: new Date(now.getTime() - (23 - i) * 3600000),
+                    y: Math.random() * 12 + 1
+                })),
+                temperature: Array(24).fill().map((_, i) => ({
+                    x: new Date(now.getTime() - (23 - i) * 3600000),
+                    y: Math.random() * 10 + 24
+                })),
+                humidity: Array(24).fill().map((_, i) => ({
+                    x: new Date(now.getTime() - (23 - i) * 3600000),
+                    y: Math.random() * 30 + 65
+                }))
+            },
+            node3: {
+                vibration: Array(24).fill().map((_, i) => ({
+                    x: new Date(now.getTime() - (23 - i) * 3600000),
+                    y: Math.floor(Math.random() * 800) + 200
+                })),
+                acceleration: Array(24).fill().map((_, i) => ({
+                    x: new Date(now.getTime() - (23 - i) * 3600000),
+                    y: Math.random() * 15 + 3
+                })),
+                temperature: Array(24).fill().map((_, i) => ({
+                    x: new Date(now.getTime() - (23 - i) * 3600000),
+                    y: Math.random() * 10 + 26
+                })),
+                humidity: Array(24).fill().map((_, i) => ({
+                    x: new Date(now.getTime() - (23 - i) * 3600000),
+                    y: Math.random() * 30 + 55
+                }))
+            },
+            node4: {
+                vibration: Array(24).fill().map((_, i) => ({
+                    x: new Date(now.getTime() - (23 - i) * 3600000),
+                    y: Math.floor(Math.random() * 400) + 80
+                })),
+                acceleration: Array(24).fill().map((_, i) => ({
+                    x: new Date(now.getTime() - (23 - i) * 3600000),
+                    y: Math.random() * 8 + 1.5
+                })),
+                temperature: Array(24).fill().map((_, i) => ({
+                    x: new Date(now.getTime() - (23 - i) * 3600000),
+                    y: Math.random() * 10 + 27
+                })),
+                humidity: Array(24).fill().map((_, i) => ({
+                    x: new Date(now.getTime() - (23 - i) * 3600000),
+                    y: Math.random() * 30 + 50
+                }))
+            }
+        };
+        return data;
+    }
+    
+    function updateMainChart(data) {
+        if (!sensorChart) return;
+        
+        // Warna untuk setiap node
+        const nodeColors = {
+            1: '#4e73df',
+            2: '#1cc88a',
+            3: '#f6c23e',
+            4: '#e74a3b'
+        };
+        
+        // Label untuk setiap sensor
+        const sensorLabels = {
+            vibration: 'Getaran',
+            acceleration: 'Akselerasi (m/s²)',
+            temperature: 'Suhu (°C)',
+            humidity: 'Kelembaban (%)',
+            pressure: 'Tekanan (hPa)',
+            battery: 'Baterai (%)'
+        };
+        
+        // Update datasets
+        sensorChart.data.datasets = [];
+        
+        for (let nodeId = 1; nodeId <= 4; nodeId++) {
+            const nodeData = data[`node${nodeId}`] || {};
+            const isActive = $(`.node-filter-btn[data-node="${nodeId}"]`).hasClass('active');
+            
+            // Tambahkan dataset untuk setiap sensor yang aktif
+            activeSensors.forEach(sensor => {
+                if (nodeData[sensor] && nodeData[sensor].length > 0) {
+                    sensorChart.data.datasets.push({
+                        label: `Node ${nodeId} - ${sensorLabels[sensor] || sensor}`,
+                        data: nodeData[sensor],
+                        borderColor: nodeColors[nodeId],
+                        backgroundColor: hexToRgba(nodeColors[nodeId], 0.1),
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        pointHoverRadius: 5,
+                        yAxisID: 'y',
+                        fill: sensor === 'vibration' || sensor === 'temperature',
+                        hidden: !isActive
+                    });
+                }
+            });
+        }
+        
+        sensorChart.update();
+    }
+    
     function startAutoRefresh() {
         // Initial fetch
         fetchLatestData();
         
         // Set up interval for auto-refresh (every 5 seconds)
         setInterval(fetchLatestData, 5000);
-    }
-    
-    function loadChartData(hours = 1) {
-        const selectedNodes = [];
-        $('.node-selector:checked').each(function() {
-            selectedNodes.push($(this).val());
-        });
-
-        const selectedSensors = [];
-        $('.sensor-type:checked').each(function() {
-            selectedSensors.push($(this).val());
-        });
-
-        if (selectedNodes.length === 0 || selectedSensors.length === 0) {
-            showAlert('Chart Error', 'Please select at least one node and one sensor type', 'warning');
-            return;
-        }
-
-        showLoading(true);
-        
-        $.ajax({
-            url: 'api/get-latest-data.php',
-            method: 'POST',
-            data: {
-                nodes: selectedNodes,
-                sensors: selectedSensors,
-                hours: hours
-            },
-            dataType: 'json'
-        })
-        .done(function(data) {
-            updateChart(data);
-        })
-        .fail(function(xhr, status, error) {
-            console.error('Error loading chart data:', error);
-            showAlert('Data Error', 'Failed to load chart data. Please try again.', 'danger');
-        })
-        .always(function() {
-            showLoading(false);
-        });
-    }
-    
-    function updateChart(data) {
-        if (!sensorChart || !data) return;
-        
-        // Clear existing datasets
-        sensorChart.data.datasets = [];
-        
-        // Add new datasets
-        data.forEach(nodeData => {
-            const nodeColor = getNodeColor(nodeData.node_id);
-            
-            if (nodeData.vibration && nodeData.vibration.length > 0 && $('#vibration-sensor').is(':checked')) {
-                sensorChart.data.datasets.push({
-                    label: `Node ${nodeData.node_id} Vibration`,
-                    data: nodeData.vibration,
-                    borderColor: nodeColor,
-                    backgroundColor: hexToRgba(nodeColor, 0.1),
-                    borderWidth: 2,
-                    pointRadius: 0,
-                    pointHoverRadius: 6,
-                    hidden: false
-                });
-            }
-            
-            if (nodeData.mpu6050 && nodeData.mpu6050.length > 0 && $('#accel-sensor').is(':checked')) {
-                sensorChart.data.datasets.push({
-                    label: `Node ${nodeData.node_id} Acceleration`,
-                    data: nodeData.mpu6050,
-                    borderColor: nodeColor,
-                    backgroundColor: hexToRgba(nodeColor, 0.1),
-                    borderWidth: 2,
-                    borderDash: [5, 5],
-                    pointRadius: 0,
-                    pointHoverRadius: 6,
-                    hidden: false
-                });
-            }
-            
-            if (nodeData.temperature && nodeData.temperature.length > 0 && $('#temp-sensor').is(':checked')) {
-                sensorChart.data.datasets.push({
-                    label: `Node ${nodeData.node_id} Temperature`,
-                    data: nodeData.temperature,
-                    borderColor: nodeColor,
-                    backgroundColor: hexToRgba(nodeColor, 0.1),
-                    borderWidth: 2,
-                    pointRadius: 0,
-                    pointHoverRadius: 6,
-                    hidden: false
-                });
-            }
-            
-            if (nodeData.humidity && nodeData.humidity.length > 0 && $('#humidity-sensor').is(':checked')) {
-                sensorChart.data.datasets.push({
-                    label: `Node ${nodeData.node_id} Humidity`,
-                    data: nodeData.humidity,
-                    borderColor: nodeColor,
-                    backgroundColor: hexToRgba(nodeColor, 0.1),
-                    borderWidth: 2,
-                    pointRadius: 0,
-                    pointHoverRadius: 6,
-                    hidden: false
-                });
-            }
-            
-            if (nodeData.pressure && nodeData.pressure.length > 0 && $('#pressure-sensor').is(':checked')) {
-                sensorChart.data.datasets.push({
-                    label: `Node ${nodeData.node_id} Pressure`,
-                    data: nodeData.pressure,
-                    borderColor: nodeColor,
-                    backgroundColor: hexToRgba(nodeColor, 0.1),
-                    borderWidth: 2,
-                    pointRadius: 0,
-                    pointHoverRadius: 6,
-                    hidden: false
-                });
-            }
-        });
-        
-        sensorChart.update();
     }
     
     function fetchLatestData() {
@@ -1498,23 +1379,25 @@ include 'includes/navbar.php';
                         .removeClass('status-normal status-warning status-danger')
                         .addClass(statusClass);
                     
-                    nodeElement.find('.node-status-icon')
+                    nodeElement.find('.fa-lg')
                         .removeClass('fa-exclamation-triangle fa-exclamation-circle fa-check-circle')
-                        .addClass(`fa-${statusIcon}`);
+                        .addClass(`fa-${statusIcon}`)
+                        .removeClass('status-normal status-warning status-danger')
+                        .addClass(statusClass);
                     
                     // Update sensor values
                     nodeElement.find('.sensor-value').eq(0).text(nodeData.vibration || '--');
                     nodeElement.find('.sensor-value').eq(1).text(
-                        nodeData.mpu6050 ? `${roundToTwo(nodeData.mpu6050)} <span class="sensor-unit">m/s²</span>` : '--'
+                        nodeData.mpu6050 ? `${roundToTwo(nodeData.mpu6050)}`  : '--'
                     );
                     nodeElement.find('.sensor-value').eq(2).text(
-                        nodeData.temperature ? `${nodeData.temperature} <span class="sensor-unit">°C</span>` : '--'
+                        nodeData.temperature ? `${nodeData.temperature}`  : '--'
                     );
                     nodeElement.find('.sensor-value').eq(3).text(
-                        nodeData.humidity ? `${nodeData.humidity} <span class="sensor-unit">%</span>` : '--'
+                        nodeData.humidity ? `${nodeData.humidity}`  : '--'
                     );
                     nodeElement.find('.sensor-value').eq(4).text(
-                        nodeData.pressure ? `${nodeData.pressure} <span class="sensor-unit">hPa</span>` : '--'
+                        nodeData.pressure ? `${nodeData.pressure}`  : '--'
                     );
                     
                     // Update progress bars
@@ -1537,25 +1420,6 @@ include 'includes/navbar.php';
                         `<i class="fas fa-clock me-1"></i> ${timeStr}`
                     );
                     
-                    // Update battery indicator
-                    if (nodeData.battery) {
-                        let batteryClass = '';
-                        if (nodeData.battery >= 70) {
-                            batteryClass = 'battery-level-high';
-                        } else if (nodeData.battery >= 30) {
-                            batteryClass = 'battery-level-medium';
-                        } else {
-                            batteryClass = 'battery-level-low';
-                        }
-                        
-                        nodeElement.find('.battery-level')
-                            .removeClass('battery-level-high battery-level-medium battery-level-low')
-                            .addClass(batteryClass)
-                            .css('width', `${nodeData.battery}%`);
-                        
-                        nodeElement.find('.battery-indicator + small').text(`${nodeData.battery}%`);
-                    }
-                    
                     // Update map marker if position changed
                     if (nodeData.latitude && nodeData.longitude && nodeMarkers[nodeId]) {
                         const newLatLng = L.latLng(nodeData.latitude, nodeData.longitude);
@@ -1564,19 +1428,18 @@ include 'includes/navbar.php';
                         // Update popup content
                         nodeMarkers[nodeId].setPopupContent(`
                             <b>Node ${nodeId}</b><br>
-                            Location: ${roundToFour(nodeData.latitude)}, ${roundToFour(nodeData.longitude)}<br>
+                            Lokasi: ${roundToFour(nodeData.latitude)}, ${roundToFour(nodeData.longitude)}<br>
                             Status: <span class="${statusClass}">${nodeData.status}</span><br>
-                            Last update: ${timeStr}
+                            Update terakhir: ${timeStr}
                         `);
                     }
                     
                     // Trigger alert if status changed to warning/danger
-                    if (nodeData.status === 'DANGER' || nodeData.status === 'WARNING') {
-                        // Only trigger if this is a new alert or the node hasn't been alerted recently
+                    if (nodeData.status === 'BAHAYA' || nodeData.status === 'PERINGATAN') {
                         if (!lastAlertNode || lastAlertNode !== nodeId) {
                             triggerAlert(
-                                `Node ${nodeId} Alert`, 
-                                `Abnormal sensor readings detected (${nodeData.status})`,
+                                `Peringatan Node ${nodeId}`, 
+                                `Pembacaan sensor tidak normal (${nodeData.status})`,
                                 nodeData.status.toLowerCase(),
                                 nodeId
                             );
@@ -1585,13 +1448,8 @@ include 'includes/navbar.php';
                     }
                 }
                 
-                // Update event logs
-                if (data.logs && data.logs.length > 0) {
-                    updateEventLogs(data.logs);
-                }
-                
                 // Show tsunami alert panel if any node is in danger
-                if (data.nodes && Object.values(data.nodes).some(node => node.status === 'DANGER')) {
+                if (data.nodes && Object.values(data.nodes).some(node => node.status === 'BAHAYA')) {
                     $('#tsunami-alert-panel').slideDown();
                     $('html').attr('data-bs-theme', 'dark');
                 } else {
@@ -1600,48 +1458,9 @@ include 'includes/navbar.php';
                 }
             }
         })
-        .fail(function() {
-            console.error('Failed to fetch latest data');
-            showAlert('Connection Error', 'Unable to connect to server. Trying to reconnect...', 'danger');
+        .fail(function(jqXHR, textStatus, errorThrown) {
+            console.error('Gagal mengambil data terbaru:', textStatus, errorThrown);
         });
-    }
-    
-    function updateEventLogs(logs) {
-        let logsHtml = '<div class="list-group list-group-flush">';
-        
-        logs.slice(0, 6).forEach(log => {
-            let icon = 'info-circle';
-            let color = 'text-primary';
-            let badge = '';
-            
-            if (log.event_type === 'danger' || log.message.toLowerCase().includes('error')) {
-                icon = 'exclamation-triangle';
-                color = 'text-danger';
-                badge = '<span class="badge bg-danger float-end">Error</span>';
-            } else if (log.event_type === 'warning') {
-                icon = 'exclamation-circle';
-                color = 'text-warning';
-                badge = '<span class="badge bg-warning text-dark float-end">Warning</span>';
-            } else if (log.message.toLowerCase().includes('alert')) {
-                icon = 'bell';
-                color = 'text-danger';
-                badge = '<span class="badge bg-danger float-end">Alert</span>';
-            }
-            
-            const timeStr = new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            
-            logsHtml += `
-                <div class="list-group-item border-0 px-0 py-2">
-                    <div class="d-flex justify-content-between mb-1">
-                        <div><i class="fas fa-${icon} me-2 ${color}"></i> ${timeStr}</div>
-                        ${badge}
-                    </div>
-                    <div class="text-muted small">${escapeHtml(log.message)}</div>
-                </div>`;
-        });
-        
-        logsHtml += '</div>';
-        $('#event-logs').html(logsHtml);
     }
     
     function triggerAlert(title, message, type, nodeId = null) {
@@ -1662,23 +1481,14 @@ include 'includes/navbar.php';
         }
         
         // Play sound for danger/warning alerts
-        if (type === 'danger' || type === 'warning') {
+        if ((type === 'danger' || type === 'warning') && alertSound) {
             if (!alertSoundPlaying) {
-                alertSound.play();
+                alertSound.play().catch(e => {
+                    console.error('Gagal memutar alert sound:', e);
+                });
                 alertSoundPlaying = true;
                 $('#silence-btn').removeClass('d-none');
             }
-        } else {
-            alertSound.pause();
-            alertSound.currentTime = 0;
-            alertSoundPlaying = false;
-        }
-        
-        // Auto-hide normal alerts after 5 seconds
-        if (type === 'success') {
-            setTimeout(() => {
-                alertBanner.slideUp();
-            }, 5000);
         }
     }
     
@@ -1686,7 +1496,7 @@ include 'includes/navbar.php';
         const nodeId = typeof nodeElement === 'object' ? $(nodeElement).data('node') : nodeElement;
         
         // Set modal title
-        $('#nodeModalTitle').html(`<i class="fas fa-satellite-dish me-2" style="color: ${getNodeColor(nodeId)}"></i> Node ${nodeId} Detailed Analysis`);
+        $('#nodeModalTitle').html(`<i class="fas fa-satellite-dish me-2" style="color: ${getNodeColor(nodeId)}"></i> Analisis Detail Node ${nodeId}`);
         
         // Fetch detailed data for this node
         $.get('api/get-node-data.php', { node_id: nodeId })
@@ -1694,9 +1504,9 @@ include 'includes/navbar.php';
             if (data.status === 'success') {
                 // Update vibration chart
                 initNodeChart('nodeVibrationChart', 
-                    `Node ${nodeId} Vibration Levels`, 
+                    `Level Getaran Node ${nodeId}`, 
                     data.vibration, 
-                    'Vibration',
+                    'Getaran',
                     '#f6c23e',
                     <?= VIBRATION_WARNING ?>,
                     <?= VIBRATION_DANGER ?>
@@ -1704,9 +1514,9 @@ include 'includes/navbar.php';
                 
                 // Update acceleration chart
                 initNodeChart('nodeAccelChart', 
-                    `Node ${nodeId} Acceleration`, 
+                    `Akselerasi Node ${nodeId}`, 
                     data.acceleration, 
-                    'Acceleration (m/s²)',
+                    'Akselerasi (m/s²)',
                     '#e74a3b',
                     <?= ACCELERATION_WARNING ?>,
                     <?= ACCELERATION_DANGER ?>
@@ -1729,37 +1539,24 @@ include 'includes/navbar.php';
                 // Show modal
                 const modal = new bootstrap.Modal(document.getElementById('nodeDetailsModal'));
                 modal.show();
-            } else {
-                showAlert('Data Error', 'Failed to load node details', 'danger');
             }
         })
-        .fail(function() {
-            showAlert('Connection Error', 'Failed to connect to server', 'danger');
+        .fail(function(jqXHR, textStatus, errorThrown) {
+            console.error('Gagal memuat detail node:', textStatus, errorThrown);
+            alert('Gagal memuat detail node. Silakan coba lagi.');
         });
     }
     
     function initNodeChart(canvasId, title, data, label, color, warningThreshold, dangerThreshold) {
-        const ctx = document.getElementById(canvasId).getContext('2d');
-        
-        if (window[canvasId.replace('Chart', '')]) {
-            window[canvasId.replace('Chart', '')].destroy();
-        }
-        
-        window[canvasId.replace('Chart', '')] = new Chart(ctx, {
-            type: 'line',
-            data: {
-                datasets: [{
-                    label: label,
-                    data: data,
-                    borderColor: color,
-                    backgroundColor: hexToRgba(color, 0.1),
-                    borderWidth: 2,
-                    pointRadius: 0,
-                    pointHoverRadius: 5,
-                    fill: true
-                }]
-            },
-            options: {
+        try {
+            const ctx = document.getElementById(canvasId);
+            if (!ctx) throw new Error('Canvas element tidak ditemukan');
+            
+            if (window[canvasId.replace('Chart', '')]) {
+                window[canvasId.replace('Chart', '')].destroy();
+            }
+            
+            const options = {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
@@ -1768,43 +1565,7 @@ include 'includes/navbar.php';
                         text: title,
                         font: { family: 'Poppins', size: 14 }
                     },
-                    legend: { display: false },
-                    annotation: {
-                        annotations: {
-                            dangerLine: {
-                                type: 'line',
-                                yMin: dangerThreshold,
-                                yMax: dangerThreshold,
-                                borderColor: '#e74a3b',
-                                borderWidth: 1,
-                                borderDash: [6, 6],
-                                label: {
-                                    content: 'Danger Threshold',
-                                    enabled: true,
-                                    position: 'left',
-                                    backgroundColor: 'rgba(231, 74, 59, 0.8)',
-                                    color: 'white',
-                                    font: { size: 10 }
-                                }
-                            },
-                            warningLine: {
-                                type: 'line',
-                                yMin: warningThreshold,
-                                yMax: warningThreshold,
-                                borderColor: '#f6c23e',
-                                borderWidth: 1,
-                                borderDash: [6, 6],
-                                label: {
-                                    content: 'Warning Threshold',
-                                    enabled: true,
-                                    position: 'left',
-                                    backgroundColor: 'rgba(246, 194, 62, 0.8)',
-                                    color: '#212529',
-                                    font: { size: 10 }
-                                }
-                            }
-                        }
-                    }
+                    legend: { display: false }
                 },
                 scales: {
                     x: {
@@ -1812,44 +1573,78 @@ include 'includes/navbar.php';
                         time: {
                             unit: 'minute',
                             displayFormats: { minute: 'HH:mm' }
-                        },
-                        grid: { color: 'rgba(0,0,0,0.05)' }
+                        }
                     },
                     y: {
-                        title: { display: true, text: label },
-                        grid: { color: 'rgba(0,0,0,0.05)' }
+                        title: { display: true, text: label }
                     }
                 },
                 elements: { line: { tension: 0.1 } }
-            },
-            plugins: [ChartAnnotation]
-        });
-    }
-    
-    function showLoading(show) {
-        if (show) {
-            $('#sensorChart').after('<div class="chart-loading-overlay"><div class="spinner-border text-primary"></div></div>');
-        } else {
-            $('.chart-loading-overlay').remove();
+            };
+            
+            // Tambahkan annotation jika plugin tersedia
+            if (typeof Chart.Annotation !== 'undefined') {
+                options.plugins.annotation = {
+                    annotations: {
+                        dangerLine: {
+                            type: 'line',
+                            yMin: dangerThreshold,
+                            yMax: dangerThreshold,
+                            borderColor: '#e74a3b',
+                            borderWidth: 1,
+                            borderDash: [6, 6],
+                            label: {
+                                content: 'Batas Bahaya',
+                                enabled: true,
+                                position: 'left',
+                                backgroundColor: 'rgba(231, 74, 59, 0.8)',
+                                color: 'white',
+                                font: { size: 10 }
+                            }
+                        },
+                        warningLine: {
+                            type: 'line',
+                            yMin: warningThreshold,
+                            yMax: warningThreshold,
+                            borderColor: '#f6c23e',
+                            borderWidth: 1,
+                            borderDash: [6, 6],
+                            label: {
+                                content: 'Batas Peringatan',
+                                enabled: true,
+                                position: 'left',
+                                backgroundColor: 'rgba(246, 194, 62, 0.8)',
+                                color: '#212529',
+                                font: { size: 10 }
+                            }
+                        }
+                    }
+                };
+            }
+            
+            window[canvasId.replace('Chart', '')] = new Chart(ctx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    datasets: [{
+                        label: label,
+                        data: data,
+                        borderColor: color,
+                        backgroundColor: hexToRgba(color, 0.1),
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        pointHoverRadius: 5,
+                        fill: true
+                    }]
+                },
+                options: options,
+                plugins: typeof Chart.Annotation !== 'undefined' ? [Chart.Annotation] : []
+            });
+            
+        } catch (error) {
+            console.error(`Gagal inisialisasi chart ${canvasId}:`, error);
+            document.getElementById(canvasId).parentElement.innerHTML = 
+                '<div class="alert alert-warning">Grafik tidak dapat dimuat</div>';
         }
-    }
-    
-    function showAlert(title, message, type) {
-        // Create alert element
-        const alertHtml = `
-            <div class="alert alert-${type} alert-dismissible fade show" role="alert">
-                <strong>${title}</strong> ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        `;
-        
-        // Prepend to body (or another suitable container)
-        $('main').prepend(alertHtml);
-        
-        // Auto-dismiss after 5 seconds
-        setTimeout(() => {
-            $('.alert').alert('close');
-        }, 5000);
     }
     
     // Helper functions
@@ -1868,15 +1663,6 @@ include 'includes/navbar.php';
         const g = parseInt(hex.slice(3, 5), 16);
         const b = parseInt(hex.slice(5, 7), 16);
         return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-    }
-    
-    function escapeHtml(unsafe) {
-        return unsafe
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
     }
     
     function roundToTwo(num) {
