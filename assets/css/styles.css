@@ -85,7 +85,7 @@ body {
     height: 260px; /* sesuaikan ukuran sesuai kebutuhan */
     width: auto;
     animation: float 3s ease-in-out infinite;
-    bottom: -1300px; /* posisi dari bawah */
+    bottom: -950px; /* posisi dari bawah */
 }
 
 .floating-dolphin.left {

@@ -61,9 +61,9 @@ if (!function_exists('check_system_status')) {
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link <?= basename($_SERVER['SCRIPT_NAME']) === 'about.php' ? 'active' : '' ?>" 
-                               href="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/about.php">
-                                <i class="fas fa-info-circle fa-fw"></i> About
+                            <a class="nav-link <?= basename($_SERVER['SCRIPT_NAME']) === 'bmkg.php' ? 'active' : '' ?>" 
+                               href="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/bmkg.php">
+                                <i class="fas fa-info-circle fa-fw"></i> Peringatan BMKG
                             </a>
                         </li>
                     </ul>

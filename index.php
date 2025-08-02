@@ -66,15 +66,6 @@ include 'includes/navbar.php';
             <div class="col-md-4">
                 <div class="feature-card">
                     <div class="feature-icon">
-                        <i class="fas fa-bell"></i>
-                    </div>
-                    <h5>Peringatan Real-time</h5>
-                    <p>Notifikasi instan ketika getaran tsunami potensial terdeteksi, dengan sistem peringatan multi-saluran termasuk SMS, sirene, dan notifikasi push aplikasi mobile.</p>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="feature-card">
-                    <div class="feature-icon">
                         <i class="fas fa-chart-line"></i>
                     </div>
                     <h5>Visualisasi Data</h5>
@@ -97,24 +88,6 @@ include 'includes/navbar.php';
                     </div>
                     <h5>Jaringan Multi-Sensor</h5>
                     <p>Penyebaran berbagai jenis sensor termasuk sensor seismik, tekanan, dan GPS untuk pengumpulan data yang komprehensif.</p>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-map-marked-alt"></i>
-                    </div>
-                    <h5>Prediksi Dampak</h5>
-                    <p>Algoritma canggih memprediksi zona dampak potensial dan perkiraan waktu kedatangan gelombang berdasarkan data terkini.</p>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-shield-alt"></i>
-                    </div>
-                    <h5>Sistem Redundan</h5>
-                    <p>Beberapa sistem cadangan memastikan operasi terus menerus bahkan selama pemadaman listrik atau kegagalan komunikasi.</p>
                 </div>
             </div>
         </div>
@@ -143,24 +116,9 @@ include 'includes/navbar.php';
                     'desc' => 'Peralatan deteksi getaran tanah dengan sensitivitas tinggi'
                 ],
                 [
-                    'img' => 'assets/img/teluk3.png',
-                    'title' => 'Pusat Kendali',
-                    'desc' => 'Stasiun pemantauan pusat dengan kemampuan pemrosesan data'
-                ],
-                [
-                    'img' => 'assets/img/teluk4.png',
-                    'title' => 'Sirene Peringatan',
-                    'desc' => 'Sistem peringatan desibel tinggi untuk pemberitahuan masyarakat'
-                ],
-                [
                     'img' => 'assets/img/teluk1.png',
                     'title' => 'Unit Tenaga Surya',
                     'desc' => 'Sumber energi berkelanjutan untuk instalasi terpencil'
-                ],
-                [
-                    'img' => 'assets/img/teluk2.png',
-                    'title' => 'Hub Komunikasi',
-                    'desc' => 'Pusat transmisi data dengan cadangan satelit'
                 ]
             ];
             
@@ -200,18 +158,17 @@ include 'includes/navbar.php';
                 <p class="mb-0">Pemantauan</p>
             </div>
             <div class="col-md-3 col-6 mb-4 mb-md-0">
-                <div class="display-4 fw-bold">5</div>
-                <p class="mb-0">Titik Deteksi</p>
+                <div class="display-4 fw-bold">2</div>
+                <p class="mb-0">Titik Deteksi Laut</p>
             </div>
-            <div class="col-md-3 col-6">
-                <div class="display-4 fw-bold">3.5</div>
-                <p class="mb-0">Respon Menit</p>
+             <div class="col-md-3 col-6 mb-4 mb-md-0">
+                <div class="display-4 fw-bold">2</div>
+                <p class="mb-0">Titik Deteksi Darat</p>
             </div>
-            <div class="col-md-3 col-6">
-                <div class="display-4 fw-bold">99.9%</div>
-                <p class="mb-0">Waktu Aktif</p>
+            <div class="col-md-3 col-6 mb-4 mb-md-0">
+                <div class="display-4 fw-bold">2</div>
+                <p class="mb-0">Solar Panel</p>
             </div>
-        </div>
     </div>
 </section>
 

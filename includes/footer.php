@@ -27,13 +27,7 @@ $appVersion = defined('APP_VERSION') ? APP_VERSION : '1.0.0';
                 <!-- About Section -->
                 <div class="col-lg-4 col-md-6">
                     <h5 class="footer-heading">Tsunami Warning System</h5>
-                    <p class="footer-about-text">Sistem pendeteksi dini tsunami berbasis IoT untuk memberikan peringatan lebih awal dan menyelamatkan lebih banyak nyawa.</p>
-                    <div class="social-links">
-                        <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
-                        <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
-                        <a href="#" class="social-icon"><i class="fab fa-linkedin-in"></i></a>
-                    </div>
+                    <p class="footer-about-text">Sistem pendeteksi dini tsunami berbasis IoT untuk memberikan peringatan lebih awal.</p>
                 </div>
                 
                 <!-- Quick Links -->
@@ -43,8 +37,6 @@ $appVersion = defined('APP_VERSION') ? APP_VERSION : '1.0.0';
                         <li><a href="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>" class="footer-link">Home</a></li>
                         <li><a href="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/monitoring.php" class="footer-link">Monitoring</a></li>
                         <li><a href="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/about.php" class="footer-link">About Us</a></li>
-                        <li><a href="#" class="footer-link">Documentation</a></li>
-                        <li><a href="#" class="footer-link">API Docs</a></li>
                     </ul>
                 </div>
                 
@@ -60,25 +52,11 @@ $appVersion = defined('APP_VERSION') ? APP_VERSION : '1.0.0';
                             <i class="fas fa-phone contact-icon"></i>
                             <span>+62 812 3456 7890</span>
                         </li>
-                        <li>
-                            <i class="fas fa-envelope contact-icon"></i>
-                            <span>info@tsunami-warning.com</span>
-                        </li>
                     </ul>
                 </div>
                 
                 <!-- Newsletter -->
-                <div class="col-lg-3 col-md-6">
-                    <h5 class="footer-heading">Newsletter</h5>
-                    <p class="footer-newsletter-text">Subscribe untuk mendapatkan update terbaru</p>
-                    <form class="newsletter-form">
-                        <div class="input-group">
-                            <input type="email" class="form-control" placeholder="Your Email" required>
-                            <button class="btn btn-primary" type="submit">Subscribe</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
+                
             
             <div class="footer-divider"></div>
             
