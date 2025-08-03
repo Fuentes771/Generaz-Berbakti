@@ -116,7 +116,7 @@ include 'includes/navbar.php';
                     'desc' => 'Peralatan deteksi getaran tanah dibawah air dengan sensitivitas tinggi'
                 ],
                 [
-                    'img' => 'assets/img/teluk1.png',
+                    'img' => 'assets/img/teluk3.png',
                     'title' => 'Unit Tenaga Surya',
                     'desc' => 'Sumber energi berkelanjutan untuk instalasi terpencil'
                 ]
