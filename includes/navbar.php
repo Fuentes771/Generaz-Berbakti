@@ -2,8 +2,8 @@
 /**
  * Navigation Bar Component - Complete Version
  * 
- * @version 2.3.0
- * @fix Mobile toggle functionality
+ * @version 2.3.1
+ * @fix Fixed mobile toggle functionality
  */
 
 if (!function_exists('check_system_status')) {
@@ -47,6 +47,7 @@ $navConfig = NAVBAR_CONFIG;
             height: 1.5em;
             vertical-align: middle;
             background-image: none;
+            pointer-events: none; /* Add this to prevent icon from capturing clicks */
         }
         
         @media (max-width: 991.98px) {
@@ -166,6 +167,13 @@ $navConfig = NAVBAR_CONFIG;
                     e.preventDefault();
                 });
             });
+            
+            // Fix for mobile toggle button - prevent any default behavior
+            if (navbarToggler) {
+                navbarToggler.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            }
         });
     </script>
 </body>
