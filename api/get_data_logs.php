@@ -1,4 +1,8 @@
 <?php
+// Tambahkan di awal script
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+ini_set('error_log', '/home/u855675680//domains/pekontelukkiluan.com/public_html/monitoring/logs/php_errors.log');
 require_once '../includes/config.php';
 
 // Konfigurasi node dengan koordinat tetap
@@ -154,8 +158,14 @@ try {
     }
     
     echo json_encode(['status' => 'success', 'time' => date('Y-m-d H:i:s')]);
+    file_put_contents('/home/u855675680//domains/pekontelukkiluan.com/public_html/monitoring/logs/last_execution.log', 
+        date('Y-m-d H:i:s')." Script executed successfully\n", 
+        FILE_APPEND);
     
 } catch (PDOException $e) {
     file_put_contents('db_errors.log', date('Y-m-d H:i:s') . " - " . $e->getMessage() . "\n", FILE_APPEND);
     echo json_encode(['status' => 'error', 'message' => 'Database error']);
+    file_put_contents('/home/u855675680//domains/pekontelukkiluan.com/public_html/monitoring/logs/script_errors.log',
+        date('Y-m-d H:i:s')." ERROR: ".$e->getMessage()."\n",
+        FILE_APPEND);
 }
