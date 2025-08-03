@@ -69,7 +69,7 @@ include 'includes/navbar.php';
                         <i class="fas fa-chart-line"></i>
                     </div>
                     <h5>Visualisasi Data</h5>
-                    <p>Grafik dan peta interaktif yang menunjukkan pola getaran, tinggi gelombang, dan area dampak potensial dengan pembaruan real-time setiap 30 detik.</p>
+                    <p>Grafik dan peta interaktif yang menunjukkan pola getaran, dan tekanan.</p>
                 </div>
             </div>
             <div class="col-md-4">
@@ -87,7 +87,7 @@ include 'includes/navbar.php';
                         <i class="fas fa-satellite-dish"></i>
                     </div>
                     <h5>Jaringan Multi-Sensor</h5>
-                    <p>Penyebaran berbagai jenis sensor termasuk sensor seismik, tekanan, dan GPS untuk pengumpulan data yang komprehensif.</p>
+                    <p>Penyebaran berbagai jenis sensor termasuk sensor getaran, tekanan, dan GPS untuk pengumpulan data yang komprehensif.</p>
                 </div>
             </div>
         </div>
@@ -107,13 +107,13 @@ include 'includes/navbar.php';
             $galleryItems = [
                 [
                     'img' => 'assets/img/teluk1.png',
-                    'title' => 'Pelampung Deteksi',
-                    'desc' => 'Pelampung lepas pantai canggih dengan sensor tekanan dan posisi GPS'
+                    'title' => 'Alat Pemantauan Gempa',
+                    'desc' => 'Alat pemantauan gempa dengan sensor getaran dan GPS untuk deteksi dini'
                 ],
                 [
                     'img' => 'assets/img/teluk2.png',
-                    'title' => 'Sensor Seismik',
-                    'desc' => 'Peralatan deteksi getaran tanah dengan sensitivitas tinggi'
+                    'title' => 'Alat Dibawah Air',
+                    'desc' => 'Peralatan deteksi getaran tanah dibawah air dengan sensitivitas tinggi'
                 ],
                 [
                     'img' => 'assets/img/teluk1.png',
