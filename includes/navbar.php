@@ -1,9 +1,9 @@
 <?php
 /**
- * Enhanced Navigation Bar Component
+ * Navigation Bar Component - Complete Version
  * 
- * @version 3.0.0
- * @fix Fully responsive mobile navigation with proper styling and functionality
+ * @version 2.3.0
+ * @fix Mobile toggle functionality
  */
 
 if (!function_exists('check_system_status')) {
@@ -11,43 +11,7 @@ if (!function_exists('check_system_status')) {
         return true; // Replace with actual system status logic
     }
 }
-
-// Ensure BASE_URL is defined
-if (!defined('BASE_URL')) {
-    define('BASE_URL', '/');
-}
-
-// Default navbar config if not defined
-if (!defined('NAVBAR_CONFIG')) {
-    $navConfig = [
-        'brand' => [
-            'logo' => 'fas fa-water',
-            'text' => 'Tsunami Alert'
-        ],
-        'links' => [
-            'home' => [
-                'icon' => 'fas fa-home',
-                'text' => 'Home',
-                'page' => 'index.php'
-            ],
-            'monitoring' => [
-                'icon' => 'fas fa-wave-square',
-                'text' => 'Monitoring',
-                'page' => 'monitoring.php'
-            ],
-            'bmkg' => [
-                'icon' => 'fas fa-info-circle',
-                'text' => 'Peringatan BMKG',
-                'page' => 'bmkg.php'
-            ]
-        ]
-    ];
-} else {
-    $navConfig = NAVBAR_CONFIG;
-}
-
-// Get current page
-$current_page = basename($_SERVER['SCRIPT_NAME']);
+$navConfig = NAVBAR_CONFIG;
 
 ?>
 
@@ -56,98 +20,20 @@ $current_page = basename($_SERVER['SCRIPT_NAME']);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tsunami Alert System</title>
-    <!-- Font Awesome -->
+    <link rel="stylesheet" href="../assets/css/navbar.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Custom CSS -->
     <style>
-        :root {
-            --primary-color: #0d6efd;
-            --secondary-color: #6c757d;
-            --success-color: #198754;
-            --danger-color: #dc3545;
-            --light-color: #f8f9fa;
-            --dark-color: #212529;
-            --navbar-bg: #ffffff;
-            --navbar-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-        
-        body {
-            font-family: 'Poppins', sans-serif;
-        }
-        
-        .navbar-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1030;
-            box-shadow: var(--navbar-shadow);
-        }
-        
-        .tsunami-navbar {
-            background-color: var(--navbar-bg);
-            padding: 0.5rem 0;
-        }
-        
-        .navbar-brand {
-            display: flex;
-            align-items: center;
-            font-weight: 700;
-            color: var(--dark-color);
-        }
-        
-        .brand-logo {
-            margin-right: 0.75rem;
-            font-size: 1.5rem;
-            color: var(--primary-color);
-        }
-        
-        .brand-text {
-            font-size: 1.25rem;
-        }
-        
-        .nav-link {
-            padding: 0.5rem 1rem;
-            font-weight: 600;
-            color: var(--secondary-color);
-            display: flex;
-            align-items: center;
-            transition: all 0.3s ease;
-        }
-        
-        .nav-link i {
-            margin-right: 0.5rem;
-            font-size: 1rem;
-        }
-        
-        .nav-link:hover, .nav-link.active {
-            color: var(--primary-color);
-        }
-        
-        .nav-link.active {
-            position: relative;
-        }
-        
-        .nav-link.active:after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 1rem;
-            right: 1rem;
-            height: 2px;
-            background-color: var(--primary-color);
-        }
-        
+        /* Custom styles for mobile toggle */
         .navbar-toggler {
             border: none;
             padding: 0.5rem;
-            font-size: 1.5rem;
-            color: var(--dark-color);
+            font-size: 1.25rem;
+            line-height: 1;
+            background-color: transparent;
+            transition: all 0.3s ease;
         }
         
         .navbar-toggler:focus {
@@ -155,73 +41,31 @@ $current_page = basename($_SERVER['SCRIPT_NAME']);
             box-shadow: none;
         }
         
-        .system-status {
-            display: flex;
-            align-items: center;
-            margin-left: 1rem;
+        .navbar-toggler-icon-custom {
+            display: inline-block;
+            width: 1.5em;
+            height: 1.5em;
+            vertical-align: middle;
+            background-image: none;
         }
         
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 0.35rem 0.75rem;
-            border-radius: 50rem;
-            font-size: 0.875rem;
-            font-weight: 600;
-            color: white;
-        }
-        
-        .status-icon {
-            margin-right: 0.5rem;
-            font-size: 0.6rem;
-        }
-        
-        .status-icon.pulse {
-            animation: pulse 1.5s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
-        
-        .navbar-spacer {
-            height: 70px;
-        }
-        
-        /* Mobile styles */
         @media (max-width: 991.98px) {
             .navbar-collapse {
                 padding: 1rem;
-                background-color: var(--navbar-bg);
-                border-radius: 0.5rem;
-                margin-top: 1rem;
+                background-color: #f8f9fa;
+                border-radius: 0.25rem;
+                margin-top: 0.5rem;
                 box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
             }
             
-            .nav-link {
-                padding: 0.75rem 0;
-                border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-            }
-            
-            .nav-link:last-child {
-                border-bottom: none;
-            }
-            
-            .nav-link.active:after {
-                display: none;
+            .navbar-nav {
+                margin-bottom: 1rem;
             }
             
             .navbar-right {
                 margin-top: 1rem;
                 padding-top: 1rem;
-                border-top: 1px solid rgba(0, 0, 0, 0.1);
-            }
-            
-            .system-status {
-                margin-left: 0;
-                justify-content: center;
+                border-top: 1px solid #dee2e6;
             }
         }
     </style>
@@ -230,46 +74,58 @@ $current_page = basename($_SERVER['SCRIPT_NAME']);
     <!-- Navbar Container -->
     <div class="navbar-container">
         <nav class="navbar navbar-expand-lg tsunami-navbar">
-            <div class="container-fluid px-3 px-md-4">
-                <!-- Brand Logo -->
+            <div class="container-fluid px-4">
+                <!-- Brand Logo - Left Side -->
                 <a class="navbar-brand" href="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>">
                     <span class="brand-logo">
-                        <i class="<?= htmlspecialchars($navConfig['brand']['logo'] ?? 'fas fa-water') ?>"></i>
+                        <i class="fas fa-water"></i>
                     </span>
-                    <span class="brand-text"><?= htmlspecialchars($navConfig['brand']['text'] ?? 'Tsunami Alert') ?></span>
+                    <span class="brand-text">Tsunami Alert</span>
                 </a>
                 
-                <!-- Mobile Toggle Button -->
+                <!-- Enhanced Mobile Toggle Button -->
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" 
                         aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
-                    <i class="fas fa-bars"></i>
+                    <span class="navbar-toggler-icon-custom">
+                        <i class="fas fa-bars"></i>
+                    </span>
                 </button>
                 
                 <!-- Navigation Content -->
                 <div class="collapse navbar-collapse" id="mainNavbar">
+                    <!-- Empty space to push items to right -->
                     <div class="me-auto"></div>
                     
-                    <!-- Navigation Links -->
+                    <!-- Right-aligned Navigation Links -->
                     <ul class="navbar-nav">
-                        <?php foreach ($navConfig['links'] as $link): ?>
-                            <li class="nav-item">
-                                <a class="nav-link <?= $current_page === $link['page'] ? 'active' : '' ?>" 
-                                   href="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= htmlspecialchars($link['page'], ENT_QUOTES, 'UTF-8') ?>">
-                                    <i class="<?= htmlspecialchars($link['icon'], ENT_QUOTES, 'UTF-8') ?> fa-fw"></i> 
-                                    <?= htmlspecialchars($link['text'], ENT_QUOTES, 'UTF-8') ?>
-                                </a>
-                            </li>
-                        <?php endforeach; ?>
+                        <li class="nav-item">
+                            <a class="nav-link <?= basename($_SERVER['SCRIPT_NAME']) === 'index.php' ? 'active' : '' ?>" 
+                               href="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>">
+                                <i class="fas fa-home fa-fw"></i> Home
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <?= basename($_SERVER['SCRIPT_NAME']) === 'monitoring.php' ? 'active' : '' ?>" 
+                               href="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/monitoring.php">
+                                <i class="fas fa-wave-square fa-fw"></i> Monitoring
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <?= basename($_SERVER['SCRIPT_NAME']) === 'bmkg.php' ? 'active' : '' ?>" 
+                               href="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/bmkg.php">
+                                <i class="fas fa-info-circle fa-fw"></i> Peringatan BMKG
+                            </a>
+                        </li>
                     </ul>
                     
-                    <!-- System Status -->
-                    <div class="navbar-right d-flex">
+                    <!-- Right-aligned System Status -->
+                    <div class="navbar-right">
                         <div class="system-status">
                             <span class="status-badge bg-<?= check_system_status() ? 'success' : 'danger' ?>">
                                 <span class="status-icon <?= check_system_status() ? 'pulse' : '' ?>">
                                     <i class="fas fa-circle"></i>
                                 </span>
-                                <?= check_system_status() ? 'SYSTEM ACTIVE' : 'SYSTEM OFFLINE' ?>
+                                SYSTEM ACTIVE
                             </span>
                         </div>
                     </div>
@@ -284,28 +140,31 @@ $current_page = basename($_SERVER['SCRIPT_NAME']);
     <!-- Bootstrap JS Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- Enhanced Navbar Script -->
+    <!-- Enhanced Navbar Toggle Script -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Bootstrap collapse
+            var navbarCollapse = document.getElementById('mainNavbar');
+            var navLinks = document.querySelectorAll('.nav-link');
+            var navbarToggler = document.querySelector('.navbar-toggler');
+            
             // Close navbar when clicking on nav links (mobile view)
-            document.querySelectorAll('.nav-link').forEach(function(navLink) {
+            navLinks.forEach(function(navLink) {
                 navLink.addEventListener('click', function() {
-                    if (window.innerWidth < 992) {
-                        var navbar = document.getElementById('mainNavbar');
-                        var bsCollapse = bootstrap.Collapse.getInstance(navbar) || new bootstrap.Collapse(navbar);
+                    if (window.innerWidth < 992) { // Only for mobile view
+                        var bsCollapse = new bootstrap.Collapse(navbarCollapse, {
+                            toggle: false
+                        });
                         bsCollapse.hide();
                     }
                 });
             });
             
-            // Add animation class when scrolling
-            window.addEventListener('scroll', function() {
-                var navbar = document.querySelector('.navbar-container');
-                if (window.scrollY > 10) {
-                    navbar.style.boxShadow = '0 2px 15px rgba(0, 0, 0, 0.15)';
-                } else {
-                    navbar.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.1)';
-                }
+            // Prevent default behavior if href is "#"
+            document.querySelectorAll('a[href="#"]').forEach(function(anchor) {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                });
             });
         });
     </script>
