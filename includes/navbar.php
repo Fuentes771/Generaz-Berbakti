@@ -2,7 +2,8 @@
 /**
  * Navigation Bar Component - Complete Version
  * 
- * @version 2.2.0
+ * @version 2.3.0
+ * @fix Mobile toggle functionality
  */
 
 if (!function_exists('check_system_status')) {
@@ -22,8 +23,52 @@ $navConfig = NAVBAR_CONFIG;
     <link rel="stylesheet" href="../assets/css/navbar.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-    <!-- Bootstrap CSS for toggle functionality -->
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Custom styles for mobile toggle */
+        .navbar-toggler {
+            border: none;
+            padding: 0.5rem;
+            font-size: 1.25rem;
+            line-height: 1;
+            background-color: transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .navbar-toggler:focus {
+            outline: none;
+            box-shadow: none;
+        }
+        
+        .navbar-toggler-icon-custom {
+            display: inline-block;
+            width: 1.5em;
+            height: 1.5em;
+            vertical-align: middle;
+            background-image: none;
+        }
+        
+        @media (max-width: 991.98px) {
+            .navbar-collapse {
+                padding: 1rem;
+                background-color: #f8f9fa;
+                border-radius: 0.25rem;
+                margin-top: 0.5rem;
+                box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+            }
+            
+            .navbar-nav {
+                margin-bottom: 1rem;
+            }
+            
+            .navbar-right {
+                margin-top: 1rem;
+                padding-top: 1rem;
+                border-top: 1px solid #dee2e6;
+            }
+        }
+    </style>
 </head>
 <body>
     <!-- Navbar Container -->
@@ -38,10 +83,11 @@ $navConfig = NAVBAR_CONFIG;
                     <span class="brand-text">Tsunami Alert</span>
                 </a>
                 
-                <!-- Mobile Toggle Button - Enhanced with proper Bootstrap classes -->
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon">
-                        <i class="fas fa-bars"></i> <!-- Font Awesome bars icon -->
+                <!-- Enhanced Mobile Toggle Button -->
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" 
+                        aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon-custom">
+                        <i class="fas fa-bars"></i>
                     </span>
                 </button>
                 
@@ -74,7 +120,6 @@ $navConfig = NAVBAR_CONFIG;
                     
                     <!-- Right-aligned System Status -->
                     <div class="navbar-right">
-                        <!-- System Status - Far Right -->
                         <div class="system-status">
                             <span class="status-badge bg-<?= check_system_status() ? 'success' : 'danger' ?>">
                                 <span class="status-icon <?= check_system_status() ? 'pulse' : '' ?>">
@@ -92,32 +137,33 @@ $navConfig = NAVBAR_CONFIG;
     <!-- Content Spacer -->
     <div class="navbar-spacer"></div>
 
-    <!-- Bootstrap JS Bundle with Popper for toggle functionality -->
+    <!-- Bootstrap JS Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- Optional: Custom JS for navbar interactions -->
+    <!-- Enhanced Navbar Toggle Script -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Close mobile menu when clicking on a nav link
-            const navLinks = document.querySelectorAll('.nav-link');
-            const navbarToggler = document.querySelector('.navbar-toggler');
-            const navbarCollapse = document.querySelector('.navbar-collapse');
+            // Initialize Bootstrap collapse
+            var navbarCollapse = document.getElementById('mainNavbar');
+            var navLinks = document.querySelectorAll('.nav-link');
+            var navbarToggler = document.querySelector('.navbar-toggler');
             
-            navLinks.forEach(link => {
-                link.addEventListener('click', () => {
-                    if (navbarCollapse.classList.contains('show')) {
-                        navbarToggler.click(); // Programmatically click the toggle button to close
+            // Close navbar when clicking on nav links (mobile view)
+            navLinks.forEach(function(navLink) {
+                navLink.addEventListener('click', function() {
+                    if (window.innerWidth < 992) { // Only for mobile view
+                        var bsCollapse = new bootstrap.Collapse(navbarCollapse, {
+                            toggle: false
+                        });
+                        bsCollapse.hide();
                     }
                 });
             });
             
-            // Add smooth scrolling to all links
-            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            // Prevent default behavior if href is "#"
+            document.querySelectorAll('a[href="#"]').forEach(function(anchor) {
                 anchor.addEventListener('click', function(e) {
                     e.preventDefault();
-                    document.querySelector(this.getAttribute('href')).scrollIntoView({
-                        behavior: 'smooth'
-                    });
                 });
             });
         });
