@@ -65,9 +65,27 @@ define('ACCELERATION_DANGER', 80000);  // Akselerasi untuk status bahaya (m/s²)
 // Path Configuration
 // ========================
 
-$protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
-define('BASE_URL', $protocol . $_SERVER['HTTP_HOST'] . str_replace('/includes', '', dirname($_SERVER['SCRIPT_NAME'])));
-define('ASSETS_PATH', '/assets');
+// Deteksi protocol dan host secara aman
+$protocol = 'http://';
+if ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || 
+    (!empty($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443) ||
+    (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https')) {
+    $protocol = 'https://';
+}
+
+$host = 'pekontelukkiluan.com'; // Default untuk CLI
+if (!empty($_SERVER['HTTP_HOST'])) {
+    $host = $_SERVER['HTTP_HOST'];
+} elseif (!empty($_SERVER['SERVER_NAME'])) {
+    $host = $_SERVER['SERVER_NAME'];
+}
+
+// Hitung base path
+$scriptPath = !empty($_SERVER['SCRIPT_NAME']) ? dirname($_SERVER['SCRIPT_NAME']) : '/monitoring';
+$basePath = str_replace('/includes', '', $scriptPath);
+
+// Definisikan BASE_URL
+define('BASE_URL', rtrim($protocol . $host . $basePath, '/'));define('ASSETS_PATH', '/assets');
 define('API_PATH', BASE_URL . '/api');
 
 // ========================
