@@ -47,7 +47,7 @@ define('IS_HTTPS',
 define('DEBUG_MODE', true);
 
 // Application Version
-define('APP_VERSION', '2.1.0');
+define('APP_VERSION', '2.2.0');
 
 // ======================================================================
 // Security Configuration
