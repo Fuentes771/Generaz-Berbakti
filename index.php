@@ -106,17 +106,17 @@ include 'includes/navbar.php';
             <?php
             $galleryItems = [
                 [
-                    'img' => 'assets/img/teluk1.png',
+                    'img' => 'assets/img/teluk1.jpg',
                     'title' => 'Alat Pemantauan Gempa',
                     'desc' => 'Alat pemantauan gempa dengan sensor getaran dan GPS untuk deteksi dini'
                 ],
                 [
-                    'img' => 'assets/img/teluk2.png',
+                    'img' => 'assets/img/teluk2.jpg',
                     'title' => 'Alat Dibawah Air',
                     'desc' => 'Peralatan deteksi getaran tanah dibawah air dengan sensitivitas tinggi'
                 ],
                 [
-                    'img' => 'assets/img/teluk3.png',
+                    'img' => 'assets/img/teluk3.jpg',
                     'title' => 'Unit Tenaga Surya',
                     'desc' => 'Sumber energi berkelanjutan untuk instalasi terpencil'
                 ]
