@@ -3,7 +3,7 @@
 ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 ini_set('error_log', '/home/u855675680//domains/pekontelukkiluan.com/public_html/monitoring/logs/php_errors.log');
-require_once '../includes/config.php';
+require_once('/home/u855675680/domains/pekontelukkiluan.com/public_html/monitoring/includes/config.php');
 
 // Konfigurasi node dengan koordinat tetap
 $nodeConfigs = [
