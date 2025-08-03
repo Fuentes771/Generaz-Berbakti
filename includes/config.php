@@ -44,10 +44,10 @@ define('IS_HTTPS',
 // ======================================================================
 
 // Debug Mode (true for development, false for production)
-define('DEBUG_MODE', filter_var(getenv('APP_DEBUG') ?: true, FILTER_VALIDATE_BOOLEAN));
+define('DEBUG_MODE', true);
 
 // Application Version
-define('APP_VERSION', '3.0.0');
+define('APP_VERSION', '2.1.0');
 
 // ======================================================================
 // Security Configuration
