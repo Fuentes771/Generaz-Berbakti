@@ -10,6 +10,8 @@ if (!function_exists('check_system_status')) {
         return true; // Replace with actual system status logic
     }
 }
+$navConfig = NAVBAR_CONFIG;
+
 ?>
 
 <!DOCTYPE html>

@@ -120,6 +120,21 @@ define('ASSETS_PATH', '/assets');
 define('API_PATH', BASE_URL . '/api');
 define('LOG_PATH', __DIR__ . '/../logs');
 
+// Tambahkan ini setelah definisi BASE_URL
+define('NAVBAR_CONFIG', [
+    'show_brand' => true,
+    'brand_logo' => BASE_URL . ASSETS_PATH . '/images/logo.png',
+    'brand_text' => 'Tsunami Warning',
+    'menu_items' => [
+        'dashboard' => [
+            'title' => 'Dashboard',
+            'url' => BASE_URL . '/dashboard',
+            'icon' => 'fas fa-gauge'
+        ],
+        // Tambahkan menu lainnya
+    ]
+]);
+
 // ======================================================================
 // Error Handling Configuration
 // ======================================================================
