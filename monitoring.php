@@ -3,11 +3,12 @@ require_once 'includes/config.php';
 
 // Ambil semua data node dari database
 function getAllNodeData() {
-    $conn = getDatabaseConnection();
     $nodesData = [];
     
     try {
         // Ambil data terbaru dari setiap node
+            $conn = getDatabaseConnection();
+
         $stmt = $conn->prepare("
             SELECT sd.* FROM sensor_data sd
             INNER JOIN (
