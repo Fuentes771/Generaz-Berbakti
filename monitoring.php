@@ -2,7 +2,7 @@
 require_once 'includes/config.php';
 
 // Ambil semua data node dari database
-function getAllNodeData() {
+function getAllNodeData(): array {
     $nodesData = [];
     
     try {
@@ -126,8 +126,6 @@ for ($i = 1; $i <= 4; $i++) {
 
 $pageTitle = "Sistem Peringatan Dini Tsunami";
 $activePage = "monitoring";
-
-include 'includes/navbar.php';
 ?>
 
 <!DOCTYPE html>
@@ -150,227 +148,11 @@ include 'includes/navbar.php';
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Poppins:wght@300;400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <link rel="stylesheet" href="assets/css/core.css">
     <link rel="stylesheet" href="assets/css/monitoring.css">
-    
-    <style>
-        :root {
-            --node1-color: #4e73df;
-            --node2-color: #1cc88a;
-            --node3-color: #f6c23e;
-            --node4-color: #e74a3b;
-            --danger-color: #e74a3b;
-            --warning-color: #f6c23e;
-            --normal-color: #1cc88a;
-            --primary-bg: #f8f9fa;
-            --dark-bg: #212529;
-            --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        }
-        
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: var(--primary-bg);
-            color: #212529;
-            overflow-x: hidden;
-        }
-        
-        body[data-bs-theme="dark"] {
-            background-color: var(--dark-bg);
-            color: #f8f9fa;
-        }
-        
-        .dashboard-title {
-            font-family: 'Orbitron', sans-serif;
-            font-weight: 700;
-            letter-spacing: 1px;
-            background: linear-gradient(90deg, #4e73df, #224abe);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        .dashboard-subtitle {
-            font-family: 'Rajdhani', sans-serif;
-            font-weight: 600;
-            letter-spacing: 1px;
-            color: #6c757d;
-        }
-        
-        .node-card {
-            border-radius: 10px;
-            border: none;
-            box-shadow: var(--card-shadow);
-            transition: all 0.3s ease;
-        }
-        
-        .node-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
-        }
-        
-        .node-card.node1 { border-left: 5px solid var(--node1-color); }
-        .node-card.node2 { border-left: 5px solid var(--node2-color); }
-        .node-card.node3 { border-left: 5px solid var(--node3-color); }
-        .node-card.node4 { border-left: 5px solid var(--node4-color); }
-        
-        .node-badge {
-            width: 12px;
-            height: 12px;
-            display: inline-block;
-            border-radius: 50%;
-        }
-        
-        .node-badge.node1 { background-color: var(--node1-color); }
-        .node-badge.node2 { background-color: var(--node2-color); }
-        .node-badge.node3 { background-color: var(--node3-color); }
-        .node-badge.node4 { background-color: var(--node4-color); }
-        
-        .status-badge {
-            font-size: 0.75rem;
-            font-weight: 600;
-            padding: 0.35rem 0.65rem;
-            border-radius: 50px;
-        }
-        
-        .status-normal {
-            background-color: var(--normal-color);
-            color: white;
-        }
-        
-        .status-warning {
-            background-color: var(--warning-color);
-            color: #212529;
-        }
-        
-        .status-danger {
-            background-color: var(--danger-color);
-            color: white;
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(231, 74, 59, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(231, 74, 59, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(231, 74, 59, 0); }
-        }
-        
-        .chart-container {
-            position: relative;
-            height: 400px;
-            width: 100%;
-            background-color: white;
-            border-radius: 8px;
-            padding: 15px;
-        }
-        
-        .map-container {
-            height: 600px;
-            width: 100%;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        
-        .sensor-value {
-            font-size: 1.25rem;
-            font-weight: 600;
-        }
-        
-        .sensor-unit {
-            font-size: 0.75rem;
-            opacity: 0.8;
-        }
-        
-        .progress-thin {
-            height: 6px;
-            border-radius: 3px;
-        }
-        
-        .real-time-blink {
-            animation: blinker 2s linear infinite;
-        }
-        
-        @keyframes blinker {
-            50% { opacity: 0.7; }
-        }
-        
-        .alert-banner {
-            border-radius: 0;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            animation: slideDown 0.5s ease-out;
-        }
-        
-        @keyframes slideDown {
-            from { transform: translateY(-100%); }
-            to { transform: translateY(0); }
-        }
-        
-        .tsunami-alert-panel {
-            background: linear-gradient(135deg, #e74a3b, #f6c23e);
-            color: white;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .data-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
-        }
-        
-        .map-control-panel {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            z-index: 1000;
-            background: white;
-            padding: 10px;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-        
-        .map-legend {
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
-            z-index: 1000;
-            background: white;
-            padding: 10px;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-        
-        .legend-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 5px;
-        }
-        
-        .legend-color {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            margin-right: 8px;
-        }
-        
-        @media (max-width: 768px) {
-            .data-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .dashboard-title {
-                font-size: 1.8rem;
-            }
-            
-            .map-container {
-                height: 400px;
-            }
-        }
-    </style>
-</head>
+    </head>
 <body class="monitoring-body" data-bs-theme="<?= $criticalAlert ? 'dark' : 'light' ?>">
+<?php include 'includes/navbar.php'; ?>
     <!-- Panel Peringatan Tsunami -->
     <div id="tsunami-alert-panel" class="tsunami-alert-panel" style="<?= $criticalAlert ? 'display: block;' : 'display: none;' ?>">
         <div class="container">
@@ -417,17 +199,20 @@ include 'includes/navbar.php';
     <!-- Konten Utama -->
     <main class="container py-4">
         <!-- Header Dashboard -->
-        <div class="text-center mb-5">
-            <h1 class="dashboard-title display-4 mb-2">SISTEM PERINGATAN DINI TSUNAMI</h1>
-            <p class="dashboard-subtitle">Jaringan Monitoring Pantai Real-time</p>
+        <div class="text-center mb-4">
+            <h1 class="dashboard-title mb-2" style="font-size: 2rem;">
+                <i class="fas fa-chart-line me-2" style="color: var(--primary-color);"></i>
+                Monitoring Real-time
+            </h1>
+            <p class="dashboard-subtitle mb-3">Sistem Peringatan Dini Tsunami - Pekon Teluk Kiluan Negri</p>
             <div class="d-flex flex-wrap justify-content-center align-items-center gap-3 mt-3">
-                <span class="status-badge status-normal">
+                <span class="status-badge status-normal" style="background: var(--bg-light); color: var(--success-color); border: 1px solid var(--success-color);">
                     <i class="fas fa-check-circle me-1"></i> Terhubung
                 </span>
-                <span class="status-badge status-normal">
+                <span class="status-badge status-normal" style="background: var(--bg-light); color: var(--primary-color); border: 1px solid var(--primary-color);">
                     <i class="fas fa-satellite-dish me-1"></i> 4/4 Node Aktif
                 </span>
-                <span class="status-badge bg-light text-dark real-time-blink" id="last-update">
+                <span class="status-badge real-time-blink" id="last-update" style="background: white; color: var(--dark-color); border: 1px solid #dee2e6;">
                     <i class="fas fa-clock me-1"></i> <?= date('d/m/Y H:i:s') ?>
                 </span>
             </div>
@@ -560,9 +345,9 @@ include 'includes/navbar.php';
         </div>
 
         <!-- Bagian Grafik Interaktif -->
-        <div class="card mb-4 border-0 shadow-sm">
-            <div class="card-header bg-primary text-white py-3">
-                <div class="d-flex justify-content-between align-items-center">
+        <div class="card mb-4 border-0 shadow-sm" style="border-radius: 15px; overflow: hidden;">
+            <div class="card-header text-white py-3" style="background: linear-gradient(135deg, var(--primary-color, #1e40af) 0%, #1e3a8a 100%);">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                     <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Visualisasi Data Sensor Real-time</h5>
                     <div class="btn-group btn-group-sm" role="group">
                         <button type="button" class="btn btn-outline-light time-filter-btn active" data-hours="1">1 Jam</button>
@@ -575,18 +360,18 @@ include 'includes/navbar.php';
                     </div>
                 </div>
             </div>
-            <div class="card-body">
-                <div class="chart-container shadow-sm">
+            <div class="card-body" style="padding: 25px;">
+                <div class="chart-container">
                     <canvas id="sensorChart"></canvas>
                 </div>
             </div>
         </div>
 
         <!-- Bagian Peta Jaringan Sensor -->
-        <div class="card mb-4 border-0 shadow-sm">
-            <div class="card-header bg-info text-white py-3">
+        <div class="card mb-4 border-0 shadow-sm" style="border-radius: 15px; overflow: hidden;">
+            <div class="card-header text-white py-3" style="background: linear-gradient(135deg, var(--success-color, #16a085) 0%, #0f7a65 100%);">
                 <div class="d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="fas fa-map-marked-alt me-2"></i>Peta Jaringan Sensor</h5>
+                    <h5 class="mb-0"><i class="fas fa-map-marked-alt me-2"></i>Peta Lokasi Sistem</h5>
                     <div>
                         <button id="refresh-map" class="btn btn-sm btn-outline-light">
                             <i class="fas fa-sync-alt me-1"></i> Segarkan Peta
@@ -610,24 +395,19 @@ include 'includes/navbar.php';
                         </button>
                     </div>
                 </div>
-                <!-- Legend Peta -->
-                <div class="map-legend">
-                    <h6 class="mb-2">Legenda</h6>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background-color: #4e73df;"></div>
-                        <span>Node 1</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background-color: #1cc88a;"></div>
-                        <span>Node 2</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background-color: #f6c23e;"></div>
-                        <span>Node 3</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background-color: #e74a3b;"></div>
-                        <span>Node 4</span>
+                <!-- Info Lokasi -->
+                <div class="map-legend" style="background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                    <h6 class="mb-2" style="color: var(--dark-color); font-weight: 700;">
+                        <i class="fas fa-info-circle me-2"></i>Informasi Lokasi
+                    </h6>
+                    <div class="legend-item" style="display: flex; align-items: center; gap: 10px; padding: 8px 0;">
+                        <div style="width: 30px; height: 30px; background: var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">
+                            <i class="fas fa-broadcast-tower"></i>
+                        </div>
+                        <div>
+                            <strong style="display: block; font-size: 0.9rem;">Pekon Teluk Kiluan Negri</strong>
+                            <small style="color: var(--gray-color);">Sistem Peringatan Dini Tsunami</small>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -687,7 +467,7 @@ include 'includes/navbar.php';
         </div>
     </div>
 
-    <!-- Audio Alert -->
+    <!-- Audio Alert (Optional - gracefully handled if missing) -->
     <audio id="alert-sound">
         <source src="assets/audio/alert.mp3" type="audio/mpeg">
     </audio>
@@ -778,68 +558,71 @@ include 'includes/navbar.php';
     
     function initMap() {
     try {
-        // 1. Validasi nodeLocations
-        if (!nodeLocations || typeof nodeLocations !== 'object') {
-            throw new Error('Invalid node locations data');
-        }
+        // Koordinat Pekon Teluk Kiluan Negri (lokasi tetap)
+        const kiluanLat = -5.774832;
+        const kiluanLng = 105.105028;
 
-        // 2. Filter lokasi yang valid
-        const validLocations = {};
-        for (const nodeId in nodeLocations) {
-            const loc = nodeLocations[nodeId];
-            
-            // Konversi ke number dan cek valid
-            const lat = parseFloat(loc.latitude);
-            const lng = parseFloat(loc.longitude);
-            
-            if (!isNaN(lat) && !isNaN(lng)) {
-                validLocations[nodeId] = {
-                    latitude: lat,
-                    longitude: lng,
-                    status: loc.status,
-                    status_class: loc.status_class,
-                    timestamp: loc.timestamp
-                };
-            }
-        }
-
-        // 3. Jika tidak ada lokasi valid
-        if (Object.keys(validLocations).length === 0) {
-            throw new Error('No valid coordinates available');
-        }
-
-        // 4. Hitung rata-rata koordinat
-        const coords = Object.values(validLocations);
-        const avgLat = coords.reduce((sum, loc) => sum + loc.latitude, 0) / coords.length;
-        const avgLng = coords.reduce((sum, loc) => sum + loc.longitude, 0) / coords.length;
-
-        // 5. Inisialisasi peta
-        map = L.map('sensor-map').setView([avgLat, avgLng], 8);
+        // Inisialisasi peta dengan center ke Kiluan
+        map = L.map('sensor-map').setView([kiluanLat, kiluanLng], 13);
         
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap contributors'
+            attribution: '&copy; OpenStreetMap contributors',
+            maxZoom: 18
         }).addTo(map);
 
-        // 6. Tambahkan marker untuk lokasi valid
-        for (const nodeId in validLocations) {
-            const loc = validLocations[nodeId];
-            
-            nodeMarkers[nodeId] = L.marker([loc.latitude, loc.longitude], {
-                icon: L.divIcon({
-                    html: `<div class="node-marker marker-${nodeId}">
-                              <span class="marker-pin" style="background-color: ${getNodeColor(nodeId)}"></span>
-                              <span class="marker-label">${nodeId}</span>
-                           </div>`,
-                    className: '',
-                    iconSize: [30, 42],
-                    iconAnchor: [15, 42]
-                })
-            }).addTo(map)
-            .bindPopup(`<b>Node ${nodeId}</b><br>
-                        Lokasi: ${loc.latitude.toFixed(4)}, ${loc.longitude.toFixed(4)}<br>
-                        Status: <span class="${loc.status_class}">${loc.status}</span><br>
-                        Update: ${loc.timestamp}`);
-        }
+        // Tambahkan marker utama di Kiluan
+        const kiluanIcon = L.divIcon({
+            html: `<div style="text-align: center;">
+                      <div style="background-color: var(--primary-color, #1e40af); 
+                                  color: white; 
+                                  width: 40px; 
+                                  height: 40px; 
+                                  border-radius: 50%; 
+                                  display: flex; 
+                                  align-items: center; 
+                                  justify-content: center;
+                                  box-shadow: 0 4px 10px rgba(30, 64, 175, 0.4);
+                                  border: 3px solid white;">
+                          <i class="fas fa-broadcast-tower" style="font-size: 18px;"></i>
+                      </div>
+                   </div>`,
+            className: '',
+            iconSize: [40, 40],
+            iconAnchor: [20, 40]
+        });
+        
+        L.marker([kiluanLat, kiluanLng], { icon: kiluanIcon })
+            .addTo(map)
+            .bindPopup(`
+                <div style="padding: 10px; min-width: 200px;">
+                    <h6 style="margin: 0 0 10px 0; color: var(--primary-color, #1e40af);">
+                        <i class="fas fa-map-marker-alt me-2"></i>
+                        Pekon Teluk Kiluan Negri
+                    </h6>
+                    <p style="margin: 5px 0; font-size: 0.9rem;">
+                        <strong>Lokasi Sistem:</strong><br>
+                        Lat: ${kiluanLat}<br>
+                        Lng: ${kiluanLng}
+                    </p>
+                    <hr style="margin: 10px 0;">
+                    <p style="margin: 5px 0; font-size: 0.85rem; color: #6c757d;">
+                        <i class="fas fa-broadcast-tower me-1"></i>
+                        Sistem Peringatan Dini Tsunami
+                    </p>
+                </div>
+            `, {
+                maxWidth: 300
+            })
+            .openPopup();
+        
+        // Tambahkan circle untuk coverage area
+        L.circle([kiluanLat, kiluanLng], {
+            color: 'var(--primary-color, #1e40af)',
+            fillColor: 'var(--primary-color, #1e40af)',
+            fillOpacity: 0.1,
+            radius: 2000, // 2km radius
+            weight: 2
+        }).addTo(map);
 
     } catch (error) {
         console.error('Gagal inisialisasi peta:', error);
@@ -847,12 +630,9 @@ include 'includes/navbar.php';
             <div class="alert alert-danger p-3">
                 <h5>Gagal Memuat Peta</h5>
                 <p>${error.message}</p>
-                <p>Data koordinat mungkin tidak valid atau tidak tersedia.</p>
+                <p>Silakan refresh halaman atau hubungi administrator.</p>
             </div>
         `);
-        
-        // Tampilkan data koordinat untuk debugging
-        console.log('Data nodeLocations:', nodeLocations);
     }
 }
 

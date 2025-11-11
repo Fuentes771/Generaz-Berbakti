@@ -1,0 +1,9 @@
+# Security: disable PHP execution and direct access in uploads
+<IfModule mod_php.c>
+  php_flag engine off
+</IfModule>
+<FilesMatch "\.(php|php[0-9]?|phtml)$">
+  Require all denied
+</FilesMatch>
+# Optional: prevent listing
+Options -Indexes

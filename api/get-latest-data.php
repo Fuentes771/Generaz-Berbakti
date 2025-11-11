@@ -1,7 +1,16 @@
 <?php
+/**
+ * Get Latest Data API
+ * Returns the most recent sensor reading for each node (1-4)
+ * 
+ * @endpoint GET /api/get-latest-data.php
+ * @response JSON with node data and computed status using computeStatus()
+ */
+
 require_once '../includes/config.php';
 
 header('Content-Type: application/json');
+header('Cache-Control: no-cache, must-revalidate');
 
 try {
     $conn = getDatabaseConnection();
@@ -27,17 +36,7 @@ try {
         $nodeId = $row['node_id'];
         $vibrationLevel = $row['vibration'] ?? 0;
         $mpuLevel = $row['mpu6050'] ?? 0;
-        
-        // Tentukan status node
-        $status = 'NORMAL';
-        $statusClass = 'status-normal';
-        if ($vibrationLevel > VIBRATION_DANGER || $mpuLevel > ACCELERATION_DANGER) {
-            $status = 'BAHAYA';
-            $statusClass = 'status-danger';
-        } elseif ($vibrationLevel > VIBRATION_WARNING || $mpuLevel > ACCELERATION_WARNING) {
-            $status = 'PERINGATAN';
-            $statusClass = 'status-warning';
-        }
+        [$status, $statusClass] = computeStatus((float)$vibrationLevel, (float)$mpuLevel);
         
         $response['nodes'][$nodeId] = [
             'node_id' => $nodeId,
@@ -45,7 +44,7 @@ try {
             'temperature' => $row['temperature'] ?? null,
             'humidity' => $row['humidity'] ?? null,
             'pressure' => $row['pressure'] ?? null,
-            'vibration' => $vibrationLevel,
+            'vibration' => (float)$vibrationLevel,
             'mpu6050' => round($mpuLevel, 2),
             'latitude' => $row['latitude'] ?? null,
             'longitude' => $row['longitude'] ?? null,

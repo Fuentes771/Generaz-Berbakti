@@ -1,13 +1,25 @@
 <?php
+/**
+ * Get Node Data API
+ * Returns historical sensor data for chart visualization
+ * 
+ * @endpoint GET /api/get-node-data.php
+ * @param int node_id - Specific node ID (optional, returns all if omitted)
+ * @param int hours - Time range in hours (default: 1, max: 24)
+ * @param string sensors - Comma-separated sensor types (default: vibration,acceleration)
+ * @response JSON with time-series data for charts
+ */
+
 require_once '../includes/config.php';
 
 header('Content-Type: application/json');
+header('Cache-Control: no-cache, must-revalidate');
 
 try {
     $conn = getDatabaseConnection();
     
     $nodeId = isset($_GET['node_id']) ? (int)$_GET['node_id'] : null;
-    $hours = isset($_GET['hours']) ? (int)$_GET['hours'] : 1;
+    $hours = isset($_GET['hours']) ? min((int)$_GET['hours'], 168) : 1; // Max 7 days
     $sensors = isset($_GET['sensors']) ? explode(',', $_GET['sensors']) : ['vibration', 'acceleration'];
     
     $validSensors = ['vibration', 'acceleration', 'temperature', 'humidity', 'pressure', 'battery'];
