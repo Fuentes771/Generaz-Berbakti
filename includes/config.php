@@ -9,7 +9,7 @@
 // === CORE SETTINGS ===
 date_default_timezone_set('Asia/Jakarta');
 define('APP_VERSION', '3.1.0');
-define('DEBUG_MODE', filter_var(getenv('DEBUG_MODE') ?: 'true', FILTER_VALIDATE_BOOLEAN)); // Default TRUE for development
+define('DEBUG_MODE', filter_var(getenv('DEBUG_MODE') ?: 'false', FILTER_VALIDATE_BOOLEAN)); // Default TRUE for development
 
 error_reporting(DEBUG_MODE ? E_ALL : E_ERROR | E_WARNING);
 ini_set('display_errors', DEBUG_MODE ? '1' : '0');
@@ -17,8 +17,8 @@ ini_set('log_errors', '1');
 
 // === DATABASE ===
 define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
-define('DB_USER', getenv('DB_USER') ?: 'root');
-define('DB_PASS', getenv('DB_PASS') ?: '');
+define('DB_USER', getenv('DB_USER') ?: 'u855675680_mntrrinovajaya');
+define('DB_PASS', getenv('DB_PASS') ?: 'sultonviton123321');
 define('DB_NAME', getenv('DB_NAME') ?: 'u855675680_mntrpekon');
 define('DB_CHARSET', 'utf8mb4');
 
